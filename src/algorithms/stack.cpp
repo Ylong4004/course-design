@@ -21,19 +21,34 @@ Stack::~Stack()
 /*基本操作*/
 void Stack::push(int value)
 {
-    // TODO: 判满 → top_index++ → data[top_index] = value
+    // 判满 → top_index++ → data[top_index] = value
+    if (!full()) {
+        ++top_index;
+        data[top_index] = value;
+    }
+    // 满栈时行为未定义，此处选择静默丢弃（调用者应自行判满）
 }
 
 int Stack::pop()
 {
-    // TODO: 判空 → int val = data[top_index] → top_index-- → return val
-    return 0;
+    // 判空 → int val = data[top_index] → top_index-- → return val
+    if (!empty()) {
+        int val = data[top_index];
+        --top_index;
+        return val;
+    }
+    // 空栈时行为未定义，返回-1作为错误哨兵（调用者应自行判空）
+    return -1;
 }
 
 int Stack::top() const
 {
-    // TODO: 判空 → return data[top_index]
-    return 0;
+    // 判空 → return data[top_index]
+    if (!empty()) {
+        return data[top_index];
+    }
+    // 空栈时行为未定义，返回-1
+    return -1;
 }
 
 /*状态查询*/
