@@ -12,46 +12,46 @@
 
 /**
  * @brief  深度优先遍历（DFS）
- * @param  pGraph      图存储对象指针
+ * @param  graph      图存储对象指针
  * @param  start_city   起始城市编号
- * @param  p_out_sequence 输出：遍历序列（动态数组，调用方释放）
- * @param  p_out_length    输出：序列长度
+ * @param  out_sequence 输出：遍历序列（动态数组，调用方释放）
+ * @param  out_length    输出：序列长度
  * @return 成功返回 SUCCESS
  *
  * @note   递归实现（或显式栈实现）
  * @note   时间复杂度 O(V+E)，空间复杂度 O(V)
  */
-int traverse_dfs(const GraphBase *pGraph,
+int traverse_dfs(const GraphBase *graph,
                 int start_city,
-                int **p_out_sequence,
-                int *p_out_length);
+                int **out_sequence,
+                int *out_length);
 
 /**
  * @brief  广度优先遍历（BFS）
- * @param  pGraph      图存储对象指针
+ * @param  graph      图存储对象指针
  * @param  start_city   起始城市编号
- * @param  p_out_sequence 输出：遍历序列（动态数组，调用方释放）
- * @param  p_out_length    输出：序列长度
+ * @param  out_sequence 输出：遍历序列（动态数组，调用方释放）
+ * @param  out_length    输出：序列长度
  * @return 成功返回 SUCCESS
  *
  * @note   使用队列辅助实现
  * @note   时间复杂度 O(V+E)，空间复杂度 O(V)
  */
-int traverse_bfs(const GraphBase *pGraph,
+int traverse_bfs(const GraphBase *graph,
                 int start_city,
-                int **p_out_sequence,
-                int *p_out_length);
+                int **out_sequence,
+                int *out_length);
 
 /**
  * @brief  打印遍历序列（格式化输出）
- * @param  pGraph    图存储对象指针
- * @param  p_sequence  遍历序列数组
+ * @param  graph    图存储对象指针
+ * @param  sequence  遍历序列数组
  * @param  length    序列长度
- * @param  p_algo_name  算法名称（如 "DFS"）
+ * @param  algo_name  算法名称（如 "DFS"）
  */
-void print_traversal_sequence(const GraphBase *pGraph,
-                            const int *p_sequence,
+void print_traversal_sequence(const GraphBase *graph,
+                            const int *sequence,
                             int length,
-                            const char *p_algo_name);
+                            const char *algo_name);
 
 #endif /* TRAVERSAL_H */

@@ -15,23 +15,23 @@
  * @brief 邻接表存储的图实现
  *
  * 内部使用头结点数组 + 链表存储边。
- * - m_p_heads[i]            第 i 个顶点的头结点
- * - m_p_heads[i].p_first_edge 指向该顶点第一条邻接边的链表
+ * - heads[i]            第 i 个顶点的头结点
+ * - heads[i].first_edge 指向该顶点第一条邻接边的链表
  *
  * 无向图：添加边 from→to 时同步添加 to→from
  */
 class AdjList : public GraphBase
 {
 private:
-    AdjListHead_t *m_p_heads; /* 头结点数组 */
-    int m_vertex_count;       /* 当前顶点数 */
-    int m_max_vertices;       /* 最大顶点容量 */
-    int m_edge_count;         /* 当前边数 */
-    GraphType m_graph_type;   /* 图类型 */
+    AdjListHead_t *heads; /* 头结点数组 */
+    int vertex_count;       /* 当前顶点数 */
+    int max_vertices;       /* 最大顶点容量 */
+    int edge_count;         /* 当前边数 */
+    GraphType graph_type;   /* 图类型 */
 
     /* 性能统计 */
-    mutable int m_find_comparisons;
-    mutable int m_edge_query_count;
+    mutable int find_comparisons;
+    mutable int edge_query_count;
 
 public:
     /* ========== 构造/析构 ========== */
@@ -52,23 +52,23 @@ public:
     virtual int add_vertex(const City_t &city) override;
     virtual int remove_vertex(int city_id) override;
     virtual bool has_vertex(int city_id) const override;
-    virtual int get_vertex(int city_id, City_t *p_out_city) const override;
+    virtual int get_vertex(int city_id, City_t *out_city) const override;
 
     /* ========== 边操作 ========== */
     virtual int add_edge(int from, int to, int weight) override;
     virtual int remove_edge(int from, int to) override;
     virtual int update_edge_weight(int from, int to, int new_weight) override;
-    virtual int get_edge_weight(int from, int to, int *p_out_weight) const override;
+    virtual int get_edge_weight(int from, int to, int *out_weight) const override;
     virtual bool has_edge(int from, int to) const override;
 
     /* ========== 遍历支持 ========== */
     virtual int get_neighbors(int vertex_id,
-                             Edge_t **p_out_neighbors,
-                             int *p_out_count) const override;
-    virtual int get_all_vertex_ids(int **p_out_ids, int *p_out_count) const override;
+                             Edge_t **out_neighbors,
+                             int *out_count) const override;
+    virtual int get_all_vertex_ids(int **out_ids, int *out_count) const override;
 
     /* ========== 性能统计 ========== */
-    virtual void get_performance_stats(PerfStats_t *p_out_stats) const override;
+    virtual void get_performance_stats(PerfStats_t *out_stats) const override;
     virtual void reset_perf_counters() override;
 
     /* ========== 调试输出 ========== */

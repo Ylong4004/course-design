@@ -30,10 +30,10 @@ private:
         int priority;  /* 优先级（距离/权值） */
     };
 
-    HeapNode* m_p_heap;    /* 堆数组（下标从 0 开始） */
-    int*      m_p_pos;     /* m_p_pos[v] = 顶点 v 在堆中的位置，-1 表示不在堆中 */
-    int       m_capacity;  /* 最大容量 */
-    int       m_size;      /* 当前堆大小 */
+    HeapNode* heap;    /* 堆数组（下标从 0 开始） */
+    int*      pos;     /* pos[v] = 顶点 v 在堆中的位置，-1 表示不在堆中 */
+    int       capacity;  /* 最大容量 */
+    int       size;      /* 当前堆大小 */
 
 public:
     /* ========== 构造/析构 ========== */
@@ -56,11 +56,11 @@ public:
 
     /**
      * @brief  取出优先级最小的顶点
-     * @param  p_out_vertex  输出：顶点编号
-     * @param  p_out_priority 输出：优先级值
+     * @param  out_vertex  输出：顶点编号
+     * @param  out_priority 输出：优先级值
      * @return 成功返回 SUCCESS
      */
-    int dequeue(int* p_out_vertex, int* p_out_priority);
+    int dequeue(int* out_vertex, int* out_priority);
 
     /**
      * @brief  降低指定顶点的优先级（Dijkstra 松弛操作专用）
@@ -71,7 +71,7 @@ public:
     int decrease_key(int vertex, int new_priority);
 
     /** @brief 查看堆顶元素（不出队） */
-    int peek(int* p_out_vertex, int* p_out_priority) const;
+    int peek(int* out_vertex, int* out_priority) const;
 
     /* ========== 状态查询 ========== */
 

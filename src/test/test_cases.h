@@ -22,9 +22,9 @@ typedef enum
 
 typedef struct
 {
-    const char *m_p_name;      /* 测试名称 */
-    TestCategory m_category;    /* 测试类别 */
-    int (*m_p_func)();          /* 测试函数指针 */
+    const char *name;      /* 测试名称 */
+    TestCategory category;    /* 测试类别 */
+    int (*func)();          /* 测试函数指针 */
 } TestCase_t;
 
 /**
@@ -40,20 +40,20 @@ typedef struct
 class TestRunner
 {
 private:
-    TestCase_t *m_p_cases; /* 测试用例数组 */
-    int m_case_count;      /* 当前注册数量 */
-    int m_max_cases;       /* 最大容量 */
-    int m_pass_count;      /* 通过数 */
-    int m_fail_count;      /* 失败数 */
+    TestCase_t *cases; /* 测试用例数组 */
+    int case_count;      /* 当前注册数量 */
+    int max_cases;       /* 最大容量 */
+    int pass_count;      /* 通过数 */
+    int fail_count;      /* 失败数 */
 
 public:
     TestRunner(int max_cases);
     ~TestRunner();
 
     /** @brief 注册一个测试用例 */
-    void register_test(const char *p_name,
+    void register_test(const char *name,
                       TestCategory cat,
-                      int (*p_func)());
+                      int (*func)());
 
     /** @brief 运行全部已注册的测试 */
     void run_all();
@@ -65,7 +65,7 @@ public:
     void print_report() const;
 
 private:
-    void run_single(const TestCase_t *p_case);
+    void run_single(const TestCase_t *test_case);
 };
 
 /* ========================== 预定义测试用例 ========================== */

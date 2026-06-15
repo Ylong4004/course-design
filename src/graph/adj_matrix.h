@@ -14,24 +14,24 @@
  * @class AdjMatrix
  * @brief 邻接矩阵存储的图实现
  *
- * 内部使用二维动态数组 `m_p_matrix[V][V]` 存储边权值。
- * - m_p_matrix[i][j] = INF_WEIGHT  表示 i→j 不连通
- * - m_p_matrix[i][j] = w           表示 i→j 权值为 w
+ * 内部使用二维动态数组 `matrix[V][V]` 存储边权值。
+ * - matrix[i][j] = INF_WEIGHT  表示 i→j 不连通
+ * - matrix[i][j] = w           表示 i→j 权值为 w
  */
 class AdjMatrix : public GraphBase
 {
 private:
-    int **m_p_matrix;       /* 邻接矩阵 [rows][cols] */
-    City_t *m_p_vertices;   /* 顶点数组 */
-    bool *m_p_valid;        /* 顶点有效标记 */
-    int m_vertex_count;     /* 当前顶点数 */
-    int m_max_vertices;     /* 最大顶点容量 */
-    int m_edge_count;       /* 当前边数 */
-    GraphType m_graph_type; /* 图类型 */
+    int **matrix;       /* 邻接矩阵 [rows][cols] */
+    City_t *vertices;   /* 顶点数组 */
+    bool *valid;        /* 顶点有效标记 */
+    int vertex_count;     /* 当前顶点数 */
+    int max_vertices;     /* 最大顶点容量 */
+    int edge_count;       /* 当前边数 */
+    GraphType graph_type; /* 图类型 */
 
     /* 性能统计计数器 */
-    mutable int m_find_comparisons;
-    mutable int m_edge_query_count;
+    mutable int find_comparisons;
+    mutable int edge_query_count;
 
 public:
     /* ========== 构造/析构 ========== */
@@ -52,23 +52,23 @@ public:
     virtual int add_vertex(const City_t &city) override;
     virtual int remove_vertex(int city_id) override;
     virtual bool has_vertex(int city_id) const override;
-    virtual int get_vertex(int city_id, City_t *p_out_city) const override;
+    virtual int get_vertex(int city_id, City_t *out_city) const override;
 
     /* ========== 边操作 ========== */
     virtual int add_edge(int from, int to, int weight) override;
     virtual int remove_edge(int from, int to) override;
     virtual int update_edge_weight(int from, int to, int new_weight) override;
-    virtual int get_edge_weight(int from, int to, int *p_out_weight) const override;
+    virtual int get_edge_weight(int from, int to, int *out_weight) const override;
     virtual bool has_edge(int from, int to) const override;
 
     /* ========== 遍历支持 ========== */
     virtual int get_neighbors(int vertex_id,
-                             Edge_t **p_out_neighbors,
-                             int *p_out_count) const override;
-    virtual int get_all_vertex_ids(int **p_out_ids, int *p_out_count) const override;
+                             Edge_t **out_neighbors,
+                             int *out_count) const override;
+    virtual int get_all_vertex_ids(int **out_ids, int *out_count) const override;
 
     /* ========== 性能统计 ========== */
-    virtual void get_performance_stats(PerfStats_t *p_out_stats) const override;
+    virtual void get_performance_stats(PerfStats_t *out_stats) const override;
     virtual void reset_perf_counters() override;
 
     /* ========== 调试输出 ========== */

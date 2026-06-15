@@ -20,31 +20,31 @@
 class StructureComparator
 {
 private:
-    GraphBase *m_p_matrix_graph; /* 邻接矩阵图 */
-    GraphBase *m_p_list_graph;   /* 邻接表图 */
+    GraphBase *matrix_graph; /* 邻接矩阵图 */
+    GraphBase *list_graph;   /* 邻接表图 */
 
 public:
-    StructureComparator(GraphBase *p_matrix_graph,
-                        GraphBase *p_list_graph);
+    StructureComparator(GraphBase *matrix_graph,
+                        GraphBase *list_graph);
     ~StructureComparator();
 
     /* ========== 单指标统计 ========== */
 
     /** @brief 统计内存占用 */
-    void measure_memory(size_t *p_out_matrix_bytes,
-                       size_t *p_out_list_bytes) const;
+    void measure_memory(size_t *out_matrix_bytes,
+                       size_t *out_list_bytes) const;
 
     /** @brief 统计遍历耗时（所有顶点 DFS + BFS） */
-    void measure_traverse_time(double *p_out_matrix_ms,
-                             double *p_out_list_ms) const;
+    void measure_traverse_time(double *out_matrix_ms,
+                             double *out_list_ms) const;
 
     /** @brief 统计顶点查找效率 */
-    void measure_find_efficiency(int *p_out_matrix_cmps,
-                               int *p_out_list_cmps) const;
+    void measure_find_efficiency(int *out_matrix_cmps,
+                               int *out_list_cmps) const;
 
     /** @brief 统计边查询效率 */
-    void measure_edge_query(int *p_out_matrix_cmps,
-                          int *p_out_list_cmps) const;
+    void measure_edge_query(int *out_matrix_cmps,
+                          int *out_list_cmps) const;
 
     /* ========== 综合报告 ========== */
 

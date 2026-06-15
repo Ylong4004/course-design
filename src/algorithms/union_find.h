@@ -22,9 +22,9 @@
  */
 class UnionFind {
 private:
-    int* m_p_parent;    /* 双亲数组 */
-    int* m_p_rank;      /* 秩数组（树高上界） */
-    int  m_size;        /* 元素总数 */
+    int* parent;    /* 双亲数组 */
+    int* rank;      /* 秩数组（树高上界） */
+    int  size;        /* 元素总数 */
 
 public:
     /* ========== 构造/析构 ========== */
