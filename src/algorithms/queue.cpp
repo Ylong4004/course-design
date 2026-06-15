@@ -1,63 +1,73 @@
-/*源代码部分
- * 模块名称  : 数据结构——循环队列
- * 编写人    : 组员B（算法&核心功能负责人）
- * 功能描述  : Queue成员函数的编码
+/*
+ * 模块名称  : 数据结构--循环队列
+ * 编写人员  : 组员B（算法/核心功能负责人）
+ * 功能描述  : Queue 成员函数实现，用于 BFS 和 Kahn 拓扑排序。
  */
 
 #include "queue.h"
 
-/*构造 析构*/
 Queue::Queue(int cap)
-    : data(nullptr), front(0), rear(0), capacity(cap), size(0)
-{
-    data = new int[cap]();
+    : data(nullptr),
+      front(0),
+      rear(0),
+      capacity(cap > 0 ? cap : 0),
+      size(0) {
+    if (capacity > 0) {
+        data = new int[capacity]();
+    }
 }
-Queue::~Queue()
-{
+
+Queue::~Queue() {
     delete[] data;
     data = nullptr;
 }
 
-/*基本操作*/
-void Queue::push(int value)
-{
-    // 判满 → data[rear] = value → rear = (rear+1) % capacity → size++
-    if (!full()) {
-        data[rear] = value;
-        rear = (rear + 1) % capacity;
-        ++size;
+void Queue::push(int value) {
+    if (full()) {
+        return;
     }
+
+    data[rear] = value;
+    rear = (rear + 1) % capacity;
+    ++size;
 }
 
-int Queue::pop()
-{
-    // 判空 → int val = data[front] → front = (front+1) % capacity → size-- → return val
-    if (!empty()) {
-        int val = data[front];
-        front = (front + 1) % capacity;
-        --size;
-        return val;
+int Queue::pop() {
+    if (empty()) {
+        return -1;
     }
-    return -1;   // 空队时行为未定义，调用者应自行判空
+
+    int value = data[front];
+    front = (front + 1) % capacity;
+    --size;
+    return value;
 }
 
-int Queue::top() const
-{
-    // 判空 → return data[front]
-    if (!empty()) {
-        return data[front];
+int Queue::top() const {
+    if (empty()) {
+        return -1;
     }
-    return -1;   // 空队时行为未定义，调用者应自行判空
+
+    return data[front];
 }
 
-/*状态查询*/
-bool Queue::empty() const { return size == 0; }
-bool Queue::full()  const { return size == capacity; }
-int  Queue::get_size() const { return size; }
-int  Queue::get_capacity() const { return capacity; }
+bool Queue::empty() const {
+    return size == 0;
+}
 
-void Queue::clear()
-{
+bool Queue::full() const {
+    return capacity <= 0 || size == capacity;
+}
+
+int Queue::get_size() const {
+    return size;
+}
+
+int Queue::get_capacity() const {
+    return capacity;
+}
+
+void Queue::clear() {
     front = 0;
     rear = 0;
     size = 0;
