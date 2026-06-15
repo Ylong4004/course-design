@@ -6,7 +6,7 @@
 
 
 #include <iostream>
-#include <cstdlib>   /* std::system() */
+#include <cstdlib>
 #include "ui/menu.h"
 
 /**

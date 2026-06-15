@@ -15,13 +15,15 @@
  * 堆中每个元素是一个 (vertex, priority) 键值对，
  * 优先级最小的元素始终在堆顶。
  *
- * 用于 Dijkstra / Prim 中高效选取当前距离最小的顶点。
+ * 使用方式（STL 风格）：
+ *   pq.push(v, dist);
+ *   while (!pq.empty()) { int v = pq.pop(); ... }
  *
  * 时间复杂度：
- *   enqueue  O(log V)
- *   dequeue  O(log V)
- *   decrease_key  O(log V)
- *   peek     O(1)
+ *   push         O(log V)
+ *   pop          O(log V)
+ *   decrease_key O(log V)
+ *   top          O(1)
  */
 class PriorityQueue {
 private:
@@ -40,27 +42,21 @@ public:
 
     /**
      * @brief 初始化优先队列
-     * @param capacity  最大容量（顶点数量）
+     * @param cap  最大容量（顶点数量）
      */
-    PriorityQueue(int capacity);
+    PriorityQueue(int cap);
     ~PriorityQueue();
 
     /* ========== 核心操作 ========== */
 
-    /**
-     * @brief  插入一个顶点及其优先级
-     * @param  vertex   顶点编号
-     * @param  priority 优先级（越小越优先）
-     */
-    int enqueue(int vertex, int priority);
+    /** @brief 插入一个顶点及其优先级 */
+    void push(int vertex, int priority);
 
-    /**
-     * @brief  取出优先级最小的顶点
-     * @param  out_vertex  输出：顶点编号
-     * @param  out_priority 输出：优先级值
-     * @return 成功返回 SUCCESS
-     */
-    int dequeue(int* out_vertex, int* out_priority);
+    /** @brief 取出并返回优先级最小的顶点编号，空堆时行为未定义 */
+    int pop();
+
+    /** @brief 查看堆顶顶点编号（不出队），空堆时行为未定义 */
+    int top() const;
 
     /**
      * @brief  降低指定顶点的优先级（Dijkstra 松弛操作专用）
@@ -68,17 +64,14 @@ public:
      * @param  new_priority 新的更小优先级
      * @note   新优先级必须 <= 旧优先级，否则行为未定义
      */
-    int decrease_key(int vertex, int new_priority);
-
-    /** @brief 查看堆顶元素（不出队） */
-    int peek(int* out_vertex, int* out_priority) const;
+    void decrease_key(int vertex, int new_priority);
 
     /* ========== 状态查询 ========== */
 
-    bool is_empty()   const;
+    bool empty() const;
     bool contains(int vertex) const;
-    int  get_size()      const;
-    int  get_capacity()  const;
+    int  get_size() const;
+    int  get_capacity() const;
 
     /** @brief 清空堆 */
     void clear();

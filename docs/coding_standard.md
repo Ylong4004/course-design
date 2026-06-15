@@ -15,18 +15,18 @@
 | 类型     | 规范                          | 示例                                            |
 | -------- | ----------------------------- | ----------------------------------------------- |
 | 局部变量 | `snake_case`（小写+下划线） | `city_count`, `edge_weight`, `is_visited` |
-| 全局变量 | `g_` 前缀 + `snake_case`  | `g_graph_matrix`, `g_graph_list`            |
-| 成员变量 | `m_` 前缀 + `snake_case`  | `m_vertex_num`, `m_edge_num`                |
+| 全局变量 | `snake_case`                | `graph_matrix`, `graph_list`                |
+| 成员变量 | `snake_case`                | `vertex_num`, `edge_num`                    |
 | 常量     | 全大写 + 下划线               | `MAX_CITY_COUNT`, `INF_WEIGHT`              |
-| 指针变量 | `p` 前缀 + 主体名           | `p_adj_matrix`, `p_head_node`               |
+| 指针变量 | `snake_case`                | `adj_matrix`, `head_node`                   |
 
 ### 1.2 函数命名
 
-| 类型          | 规范                   | 示例                                   |
-| ------------- | ---------------------- | -------------------------------------- |
-| 公共接口      | `snake_case`          | `add_city()`, `find_shortest_path()` |
-| 私有/内部函数 | `snake_case`          | `init_matrix()`, `resize_list()`    |
-| 算法函数      | `snake_case`          | `run_dijkstra()`, `build_mst_prim()` |
+| 类型          | 规范           | 示例                                     |
+| ------------- | -------------- | ---------------------------------------- |
+| 公共接口      | `snake_case` | `add_city()`, `find_shortest_path()` |
+| 私有/内部函数 | `snake_case` | `init_matrix()`, `resize_list()`     |
+| 算法函数      | `snake_case` | `run_dijkstra()`, `build_mst_prim()` |
 
 ### 1.3 结构体/类命名
 
@@ -240,11 +240,11 @@ extern City_t g_city_array[];  // 不该让其他模块直接操作
 
 ### 5.1 分配与释放配套
 
-| 分配方式 | 释放方式 | 场景 |
-|----------|----------|------|
-| `new Type` | `delete ptr` | 单个对象 |
-| `new Type[n]` | `delete[] ptr` | 数组 |
-| `new(std::nothrow) Type` | `delete ptr` | 单个对象（失败返回 nullptr，不抛异常） |
+| 分配方式                   | 释放方式         | 场景                                   |
+| -------------------------- | ---------------- | -------------------------------------- |
+| `new Type`               | `delete ptr`   | 单个对象                               |
+| `new Type[n]`            | `delete[] ptr` | 数组                                   |
+| `new(std::nothrow) Type` | `delete ptr`   | 单个对象（失败返回 nullptr，不抛异常） |
 
 ```cpp
 // 分配单个对象
@@ -504,11 +504,11 @@ git push
 
 ## 八、常见禁忌
 
-| 序号 | 禁忌                              | 错误示例                                | 后果                                                                          | 正确做法                                                                              |
-| ---- | --------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 1    | 头文件中 `using namespace std;` | `using namespace std;` 写在 `.h` 里 | 所有 include 该文件的代码都被强制引入 std 命名空间，造成符号污染、命名冲突    | 头文件内只用 `std::string` 等完整限定名；`.cpp` 内才可写 `using namespace std;` |
-| 2    | 魔数                              | `if (cityCount > 100)`                | 数字含义不明，到处散落，修改时容易漏改                                        | `#define MAX_CITY_COUNT 100` 或 `const int MAX_CITY_COUNT = 100;`                 |
-| 3    | 无意义变量名                      | `int a, b, tmp, x1, foo;`             | 读代码的人看不懂含义，答辩时老师问"这个 a 是什么"                             | `int city_count, edge_weight, start_index;`                                         |
-| 4    | `gets()`                        | `gets(buffer);`                       | `gets()` 不检查缓冲区长度，输入过长直接内存越界崩溃，C11 标准已移除该函数   | `std::cin.getline(buffer, sizeof(buffer));`                                        |
-| 5    | 大数组                            | `void func() { int arr[1000000]; }`   | 栈空间默认 1~8MB，大数组直接栈溢出导致程序崩溃（无任何错误提示）              | `int* arr = new (std::nothrow) int[1000000];` 用完 `delete[] arr; arr = nullptr;`  |
-| 6    | 悬空指针                          | `delete ptr;` 后继续使用 `ptr`       | `delete` 后内存已归还系统，继续访问 → 未定义行为（可能崩溃、可能读到脏数据） | `delete ptr; ptr = nullptr;` 之后使用前检查 `if (ptr != nullptr)`                    |
+| 序号 | 禁忌                              | 错误示例                                | 后果                                                                            | 正确做法                                                                              |
+| ---- | --------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1    | 头文件中 `using namespace std;` | `using namespace std;` 写在 `.h` 里 | 所有 include 该文件的代码都被强制引入 std 命名空间，造成符号污染、命名冲突      | 头文件内只用 `std::string` 等完整限定名；`.cpp` 内才可写 `using namespace std;` |
+| 2    | 魔数                              | `if (cityCount > 100)`                | 数字含义不明，到处散落，修改时容易漏改                                          | `#define MAX_CITY_COUNT 100` 或 `const int MAX_CITY_COUNT = 100;`                 |
+| 3    | 无意义变量名                      | `int a, b, tmp, x1, foo;`             | 读代码的人看不懂含义，答辩时老师问"这个 a 是什么"                               | `int city_count, edge_weight, start_index;`                                         |
+| 4    | `gets()`                        | `gets(buffer);`                       | `gets()` 不检查缓冲区长度，输入过长直接内存越界崩溃，C11 标准已移除该函数     | `std::cin.getline(buffer, sizeof(buffer));`                                         |
+| 5    | 大数组                            | `void func() { int arr[1000000]; }`   | 栈空间默认 1~8MB，大数组直接栈溢出导致程序崩溃（无任何错误提示）                | `int* arr = new (std::nothrow) int[1000000];` 用完 `delete[] arr; arr = nullptr;` |
+| 6    | 悬空指针                          | `delete ptr;` 后继续使用 `ptr`      | `delete` 后内存已归还系统，继续访问 → 未定义行为（可能崩溃、可能读到脏数据） | `delete ptr; ptr = nullptr;` 之后使用前检查 `if (ptr != nullptr)`                 |
