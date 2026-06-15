@@ -176,6 +176,6 @@ void AdjList::free_edge_list(int index)
 
 EdgeNode_t *AdjList::create_edge_node(int dest_city, int weight) const
 {
-    // TODO: malloc → 赋值 → 返回
+    // TODO: new → 赋值 → 返回
     return nullptr;
 }

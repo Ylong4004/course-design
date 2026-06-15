@@ -234,45 +234,84 @@ extern City_t g_CityArray[];  // 不该让其他模块直接操作
 
 ## 五、内存管理
 
+统一使用 `new` / `delete`（C++ 方式），禁止使用 `malloc` / `free`。
+
+> **原因**：项目中有类对象（`AdjMatrix`、`AdjList` 等），必须用 `new`/`delete` 才能正确调用构造函数和析构函数。`malloc`/`free` 不调用构造/析构，会导致成员变量未初始化、内存泄漏。
+
 ### 5.1 分配与释放配套
 
+| 分配方式 | 释放方式 | 场景 |
+|----------|----------|------|
+| `new Type` | `delete ptr` | 单个对象 |
+| `new Type[n]` | `delete[] ptr` | 数组 |
+| `new(std::nothrow) Type` | `delete ptr` | 单个对象（失败返回 nullptr，不抛异常） |
+
 ```cpp
-// 分配
-int* p_array = (int*)malloc(size * sizeof(int));
-int** p_matrix = (int**)malloc(rows * sizeof(int*));
+// 分配单个对象
+AdjMatrix* p_matrix_graph = new (std::nothrow) AdjMatrix(100, GRAPH_UNDIRECTED);
+if (p_matrix_graph == nullptr) {
+    printf("[错误] 内存分配失败！\n");
+    return ERR_OUT_OF_MEMORY;
+}
+
+// 分配数组
+int* p_buffer = new (std::nothrow) int[buf_size];
+City_t* p_cities = new (std::nothrow) City_t[max_count];
+int** p_matrix = new (std::nothrow) int*[rows];
 for (int i = 0; i < rows; i++) {
-    p_matrix[i] = (int*)malloc(cols * sizeof(int));
+    p_matrix[i] = new (std::nothrow) int[cols];
 }
 
 // 释放（与分配顺序相反）
 for (int i = 0; i < rows; i++) {
-    free(p_matrix[i]);
+    delete[] p_matrix[i];
 }
-free(p_matrix);
-free(p_array);
+delete[] p_matrix;
+delete[] p_cities;
+delete[] p_buffer;
+delete p_matrix_graph;       // 单个对象用 delete
 ```
 
 ### 5.2 链表结点释放
 
 ```cpp
-void free_adj_list(EdgeNode_t* p_head) {
+void free_edge_list(EdgeNode_t* p_head) {
     EdgeNode_t* p_curr = p_head;
-    while (p_curr != NULL) {
+    while (p_curr != nullptr) {
         EdgeNode_t* p_next = p_curr->p_next;
-        free(p_curr);
+        delete p_curr;              // 单个结点用 delete
         p_curr = p_next;
     }
 }
 ```
 
-### 5.3 内存检查
+### 5.3 使用安全宏（推荐）
+
+项目 `defines.h` 提供了四个安全宏，自动处理失败检查和置空：
 
 ```cpp
-int* p_buffer = (int*)malloc(buf_size * sizeof(int));
-if (p_buffer == NULL) {
-    printf("[错误] 内存分配失败！\n");
-    return ERR_OUT_OF_MEMORY;
-}
+// 单个对象
+safe_new(p_graph, AdjMatrix, 100, GRAPH_UNDIRECTED);   // 分配 + 失败检查
+safe_delete(p_graph);                                   // 释放 + 置 nullptr
+
+// 数组
+safe_new_array(p_buffer, int, buf_size);                // 分配 + 失败检查
+safe_delete_array(p_buffer);                            // 释放 + 置 nullptr
+```
+
+### 5.4 严禁混用
+
+```cpp
+// ❌ 致命错误——未定义行为
+int* p = new int[100];
+free(p);                        // new 出来的用 free 释放，崩
+
+EdgeNode_t* n = new EdgeNode_t;
+free(n);                        // 析构函数不会被调用
+
+// ❌ 反过来也错
+int* p2 = (int*)malloc(sizeof(int) * 100);
+delete[] p2;                    // malloc 出来的用 delete 释放，崩
 ```
 
 ---
@@ -471,5 +510,5 @@ git push
 | 2    | 魔数                              | `if (cityCount > 100)`                | 数字含义不明，到处散落，修改时容易漏改                                        | `#define MAX_CITY_COUNT 100` 或 `const int MAX_CITY_COUNT = 100;`                 |
 | 3    | 无意义变量名                      | `int a, b, tmp, x1, foo;`             | 读代码的人看不懂含义，答辩时老师问"这个 a 是什么"                             | `int city_count, edge_weight, start_index;`                                         |
 | 4    | `gets()`                        | `gets(buffer);`                       | `gets()` 不检查缓冲区长度，输入过长直接内存越界崩溃，C11 标准已移除该函数   | `fgets(buffer, sizeof(buffer), stdin);` 或 `scanf("%s", buffer);`                 |
-| 5    | 大数组                            | `void func() { int arr[1000000]; }`   | 栈空间默认 1~8MB，大数组直接栈溢出导致程序崩溃（无任何错误提示）              | `int* arr = (int*)malloc(1000000 * sizeof(int));` 用完 `free(arr);`               |
-| 6    | 悬空指针                          | `free(ptr);` 后继续使用 `ptr`       | `free` 后内存已归还系统，继续访问 → 未定义行为（可能崩溃、可能读到脏数据） | `free(ptr); ptr = NULL;` 之后使用前检查 `if (ptr != NULL)`                        |
+| 5    | 大数组                            | `void func() { int arr[1000000]; }`   | 栈空间默认 1~8MB，大数组直接栈溢出导致程序崩溃（无任何错误提示）              | `int* arr = new (std::nothrow) int[1000000];` 用完 `delete[] arr; arr = nullptr;`  |
+| 6    | 悬空指针                          | `delete ptr;` 后继续使用 `ptr`       | `delete` 后内存已归还系统，继续访问 → 未定义行为（可能崩溃、可能读到脏数据） | `delete ptr; ptr = nullptr;` 之后使用前检查 `if (ptr != nullptr)`                    |

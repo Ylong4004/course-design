@@ -104,7 +104,7 @@
   - find_index(city_id)          // 遍历头数组按 id 匹配
   - find_edge_node(from, to)     // 链表中查找
   - free_edge_list(index)        // 释放整条边链表
-  - create_edge_node(dest, w)    // malloc 新边结点
+  - create_edge_node(dest, w)    // new 新边结点
 ```
 
 ---

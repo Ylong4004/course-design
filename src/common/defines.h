@@ -17,26 +17,66 @@
 #define DEBUG_PRINT(fmt, ...) ((void)0)
 #endif
 
-/* ========================== 安全宏 ========================== */
+/* ========================== 安全内存宏 ========================== */
 
-/** @brief 内存分配安全检查 */
-#define safe_malloc(ptr, size)                                              \
+/**
+ * @brief 安全分配单个对象（调用构造函数）
+ * @note  失败时打印错误信息并退出
+ *
+ * 用法：safe_new(p_graph, AdjMatrix, 100, GRAPH_UNDIRECTED);
+ *       展开为：p_graph = new(std::nothrow) AdjMatrix(100, GRAPH_UNDIRECTED);
+ */
+#define safe_new(ptr, Type, ...)                                            \
     do                                                                      \
     {                                                                       \
-        (ptr) = malloc(size);                                               \
-        if ((ptr) == NULL)                                                  \
+        (ptr) = new (std::nothrow) Type(__VA_ARGS__);                      \
+        if ((ptr) == nullptr)                                               \
         {                                                                   \
             printf("[错误] 内存分配失败: %s, 行 %d\n", __FILE__, __LINE__); \
             exit(EXIT_FAILURE);                                             \
         }                                                                   \
     } while (0)
 
-/** @brief 安全释放并置空 */
-#define safe_free(ptr) \
-    do                 \
-    {                  \
-        free(ptr);     \
-        (ptr) = NULL;  \
+/**
+ * @brief 安全分配数组
+ * @note  失败时打印错误信息并退出
+ *
+ * 用法：safe_new_array(p_matrix, int, rows);
+ *       展开为：p_matrix = new(std::nothrow) int[rows];
+ */
+#define safe_new_array(ptr, Type, count)                                    \
+    do                                                                      \
+    {                                                                       \
+        (ptr) = new (std::nothrow) Type[(count)];                          \
+        if ((ptr) == nullptr)                                               \
+        {                                                                   \
+            printf("[错误] 内存分配失败: %s, 行 %d\n", __FILE__, __LINE__); \
+            exit(EXIT_FAILURE);                                             \
+        }                                                                   \
+    } while (0)
+
+/**
+ * @brief 安全释放单个对象（调用析构函数并置空）
+ *
+ * 用法：safe_delete(p_graph);
+ */
+#define safe_delete(ptr) \
+    do                   \
+    {                    \
+        delete (ptr);    \
+        (ptr) = nullptr; \
+    } while (0)
+
+/**
+ * @brief 安全释放数组（调用析构函数并置空）
+ *
+ * 用法：safe_delete_array(p_buffer);
+ */
+#define safe_delete_array(ptr) \
+    do                         \
+    {                          \
+        delete[] (ptr);        \
+        (ptr) = nullptr;       \
     } while (0)
 
 /* ========================== 工具宏 ========================== */
