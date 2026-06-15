@@ -1,80 +1,56 @@
-#include "Queue.h"
+/*
+ * 模块名称  : 数据结构——循环队列
+ * 编写人    : 组员B（算法&核心功能负责人）
+ * 功能描述  : 基于数组的循环队列实现，用于 BFS 和 Kahn 拓扑排序。
+ *            先入先出（FIFO），支持判空、判满、入队、出队。
+ */
 
-/* 构造函数 */
-Queue::Queue(int capacity) {
-    // 分配数组空间，容量至少为 1（避免除零或空队列）
-    if (capacity <= 0) capacity = 1;
-    m_capacity = capacity;
-    m_p_data = new int[m_capacity];
-    m_front = 0;
-    m_rear = 0;
-    m_size = 0;
-}
+#ifndef QUEUE_H
+#define QUEUE_H
 
-/* 析构函数 */
-Queue::~Queue() {
-    delete[] m_p_data;
-    m_p_data = nullptr;
-}
+/**
+ * @class Queue
+ * @brief 循环队列（数组实现）
+ *
+ * 使用固定容量数组 + 头尾双指针实现循环复用空间。
+ * 用于 BFS 广度优先遍历、Kahn 拓扑排序中管理待处理顶点。
+ *
+ * 使用方式（STL 风格，调用者自行判空/判满）：
+ *   while (!q.empty()) { int v = q.pop(); ... }
+ */
+class Queue {
+private:
+    int* data;       /* 队列数据数组 */
+    int  front;      /* 队首索引 */
+    int  rear;       /* 队尾索引 */
+    int  capacity;   /* 最大容量 */
+    int  size;       /* 当前元素个数 */
 
-/* 入队操作 */
-int Queue::enqueue(int value) {
-    if (is_full()) {
-        return -1;   // 队列已满，入队失败
-    }
-    m_p_data[m_rear] = value;
-    m_rear = (m_rear + 1) % m_capacity;
-    ++m_size;
-    return 0;
-}
+public:
+    /* ========== 构造/析构 ========== */
+    Queue(int cap);
+    ~Queue();
 
-/* 出队操作 */
-int Queue::dequeue(int* p_out_value) {
-    if (is_empty()) {
-        return -1;   // 队列为空，出队失败
-    }
-    if (p_out_value != nullptr) {
-        *p_out_value = m_p_data[m_front];
-    }
-    m_front = (m_front + 1) % m_capacity;
-    --m_size;
-    return 0;
-}
+    /* ========== 基本操作 ========== */
 
-/* 查看队首元素（不删除） */
-int Queue::peek(int* p_out_value) const {
-    if (is_empty()) {
-        return -1;
-    }
-    if (p_out_value != nullptr) {
-        *p_out_value = m_p_data[m_front];
-    }
-    return 0;
-}
+    /** @brief 入队（从队尾插入），满队时行为未定义 */
+    void push(int value);
 
-/* 判空 */
-bool Queue::is_empty() const {
-    return m_size == 0;
-}
+    /** @brief 出队（从队首删除并返回元素），空队时行为未定义 */
+    int pop();
 
-/* 判满 */
-bool Queue::is_full() const {
-    return m_size == m_capacity;
-}
+    /** @brief 查看队首元素（不出队），空队时行为未定义 */
+    int top() const;
 
-/* 获取当前元素个数 */
-int Queue::get_size() const {
-    return m_size;
-}
+    /* ========== 状态查询 ========== */
 
-/* 获取队列容量 */
-int Queue::get_capacity() const {
-    return m_capacity;
-}
+    bool empty() const;
+    bool full()  const;
+    int  get_size() const;
+    int  get_capacity() const;
 
-/* 清空队列 */
-void Queue::clear() {
-    m_front = 0;
-    m_rear = 0;
-    m_size = 0;
-}
+    /** @brief 清空队列（重置头尾指针） */
+    void clear();
+};
+
+#endif /* QUEUE_H */
