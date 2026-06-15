@@ -5,7 +5,8 @@
  */
 
 
-#include <stdlib.h>   /* system() */
+#include <iostream>
+#include <cstdlib>   /* std::system() */
 #include "ui/menu.h"
 
 /**
@@ -15,7 +16,7 @@
 int main()
 {
     /* Windows 终端默认 GBK 编码，源码是 UTF-8，需要切换代码页避免中文乱码 */
-    system("chcp 65001 > nul");
+    std::system("chcp 65001 > nul");
 
     MenuSystem menu;
 
@@ -26,6 +27,7 @@ int main()
     /* 若不存在 → 加载内置示例路网数据 */
 
     menu.run();
-    printf("程序入口测试成功！\n");
+
+    std::cout << "程序入口测试成功！" << std::endl;
     return 0;
 }

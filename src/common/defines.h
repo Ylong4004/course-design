@@ -7,14 +7,16 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+#include <iostream>
+
 /* ========================== 调试开关 ========================== */
 
 // #define DEBUG_MODE          /* 开启后输出详细调试信息 */
 
 #ifdef DEBUG_MODE
-#define DEBUG_PRINT(fmt, ...) printf("[DEBUG] " fmt "\n", ##__VA_ARGS__)
+#define DEBUG_PRINT(msg)  std::cout << "[DEBUG] " << msg << std::endl
 #else
-#define DEBUG_PRINT(fmt, ...) ((void)0)
+#define DEBUG_PRINT(msg)  ((void)0)
 #endif
 
 /* ========================== 安全内存宏 ========================== */
@@ -24,7 +26,6 @@
  * @note  失败时打印错误信息并退出
  *
  * 用法：safe_new(p_graph, AdjMatrix, 100, GRAPH_UNDIRECTED);
- *       展开为：p_graph = new(std::nothrow) AdjMatrix(100, GRAPH_UNDIRECTED);
  */
 #define safe_new(ptr, Type, ...)                                            \
     do                                                                      \
@@ -32,7 +33,8 @@
         (ptr) = new (std::nothrow) Type(__VA_ARGS__);                      \
         if ((ptr) == nullptr)                                               \
         {                                                                   \
-            printf("[错误] 内存分配失败: %s, 行 %d\n", __FILE__, __LINE__); \
+            std::cerr << "[错误] 内存分配失败: " << __FILE__                \
+                      << ", 行 " << __LINE__ << std::endl;                 \
             exit(EXIT_FAILURE);                                             \
         }                                                                   \
     } while (0)
@@ -42,7 +44,6 @@
  * @note  失败时打印错误信息并退出
  *
  * 用法：safe_new_array(p_matrix, int, rows);
- *       展开为：p_matrix = new(std::nothrow) int[rows];
  */
 #define safe_new_array(ptr, Type, count)                                    \
     do                                                                      \
@@ -50,7 +51,8 @@
         (ptr) = new (std::nothrow) Type[(count)];                          \
         if ((ptr) == nullptr)                                               \
         {                                                                   \
-            printf("[错误] 内存分配失败: %s, 行 %d\n", __FILE__, __LINE__); \
+            std::cerr << "[错误] 内存分配失败: " << __FILE__                \
+                      << ", 行 " << __LINE__ << std::endl;                 \
             exit(EXIT_FAILURE);                                             \
         }                                                                   \
     } while (0)
@@ -97,20 +99,19 @@
     } while (0)
 
 /** @brief 清空输入缓冲区 */
-#define clear_stdin()                                 \
-    do                                                \
-    {                                                 \
-        int _c;                                       \
-        while ((_c = getchar()) != '\n' && _c != EOF) \
-            ;                                         \
+#define clear_stdin()                                   \
+    do                                                  \
+    {                                                   \
+        while (std::cin.get() != '\n' && !std::cin.eof()) \
+            ;                                           \
     } while (0)
 
 /** @brief 按任意键继续 */
-#define pause_console()                         \
-    do                                  \
-    {                                   \
-        printf("\n按 Enter 键继续..."); \
-        clear_stdin();                  \
+#define pause_console()                          \
+    do                                    \
+    {                                     \
+        std::cout << "\n按 Enter 键继续..."; \
+        clear_stdin();                      \
     } while (0)
 
 #endif /* DEFINES_H */

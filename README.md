@@ -110,7 +110,7 @@ course-design/
 | 指针变量 | `p_` + 主体名         | `p_adj_matrix`, `p_head_node`    |
 | 全局变量 | `g_` + `snake_case` | `g_graph_list`                     |
 | 常量     | `UPPER_CASE`          | `MAX_CITY_COUNT`, `INF_WEIGHT`   |
-| 公共函数 | `PascalCase`          | `AddCity()`, `RunDijkstra()`     |
+| 公共函数 | `snake_case`          | `add_city()`, `run_dijkstra()`    |
 | 私有函数 | `snake_case`          | `init_matrix()`, `find_index()`  |
 | 结构体   | `PascalCase` + `_t` | `City_t`, `Edge_t`               |
 | 类       | `PascalCase`          | `GraphBase`, `AdjMatrix`         |
