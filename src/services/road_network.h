@@ -22,10 +22,10 @@
 class RoadNetwork
 {
 private:
-    GraphBase *m_p_matrix_graph; /* 邻接矩阵存储 */
-    GraphBase *m_p_list_graph;   /* 邻接表存储 */
-    GraphType m_graph_type;     /* 图类型 */
-    int m_max_cities;           /* 最大城市数 */
+    GraphBase *matrix_graph; /* 邻接矩阵存储 */
+    GraphBase *list_graph;   /* 邻接表存储 */
+    GraphType graph_type;     /* 图类型 */
+    int max_cities;           /* 最大城市数 */
 
 public:
     /**
@@ -47,7 +47,7 @@ public:
     int add_city(int id, const char *name);
     int remove_city(int city_id);
     bool has_city(int city_id) const;
-    int get_city_name(int city_id, char *p_out_name) const;
+    int get_city_name(int city_id, char *out_name) const;
     int get_city_count() const;
     void list_all_cities() const;
 

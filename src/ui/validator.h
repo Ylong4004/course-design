@@ -27,10 +27,10 @@ public:
 
     /** @brief 校验整数是否在 [min_val, max_val] 范围内 */
     static bool is_in_range(int value, int min_val, int max_val,
-                            const char* p_field_name);
+                            const char* field_name);
 
     /** @brief 校验是否为正整数 */
-    static bool is_positive_int(int value, const char* p_field_name);
+    static bool is_positive_int(int value, const char* field_name);
 
     /* ========== 字符串校验 ========== */
 
@@ -40,7 +40,7 @@ public:
     /** @brief 校验字符串长度 */
     static bool check_length(const std::string& str,
                              int min_len, int max_len,
-                             const char* p_field_name);
+                             const char* field_name);
 
     /* ========== 业务校验 ========== */
 
@@ -59,16 +59,16 @@ public:
     /* ========== 安全输入函数 ========== */
 
     /** @brief 安全读取整数（带重试和错误提示） */
-    static int read_int_safe(const char* p_prompt,
+    static int read_int_safe(const char* prompt,
                              int min_val, int max_val);
 
     /** @brief 安全读取字符串（带长度限制） */
-    static void read_str_safe(const char* p_prompt,
+    static void read_str_safe(const char* prompt,
                               std::string& buffer,
                               int max_len);
 
     /** @brief 读取确认（Y/N） */
-    static bool read_confirm(const char* p_prompt);
+    static bool read_confirm(const char* prompt);
 };
 
 #endif /* VALIDATOR_H */

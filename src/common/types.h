@@ -90,7 +90,7 @@ typedef struct EdgeNode
 {
     int dest_city;          /* 目标城市编号 */
     int weight;             /* 边权值 */
-    struct EdgeNode *p_next; /* 下一邻接边 */
+    struct EdgeNode *next; /* 下一邻接边 */
 } EdgeNode_t;
 
 /**
@@ -99,7 +99,7 @@ typedef struct EdgeNode
 typedef struct
 {
     City_t city;            /* 城市信息 */
-    EdgeNode_t *p_first_edge; /* 第一条邻接边 */
+    EdgeNode_t *first_edge; /* 第一条邻接边 */
 } AdjListHead_t;
 
 /**
@@ -108,7 +108,7 @@ typedef struct
 typedef struct
 {
     int distance; /* 最短距离 */
-    int *p_path;  /* 路径顶点序列（动态数组） */
+    int *path;  /* 路径顶点序列（动态数组） */
     int path_len; /* 路径长度（顶点个数） */
 } PathResult_t;
 
@@ -128,7 +128,7 @@ typedef struct
  */
 typedef struct
 {
-    Edge_t *p_edges;  /* 生成树的边集合 */
+    Edge_t *edges;  /* 生成树的边集合 */
     int edge_count;   /* 边的数量 */
     int total_cost;   /* 总造价/总权值 */
 } MSTResult_t;

@@ -17,11 +17,11 @@
  */
 class Queue {
 private:
-    int* m_p_data;       /* 队列数据数组 */
-    int  m_front;        /* 队首索引 */
-    int  m_rear;         /* 队尾索引 */
-    int  m_capacity;     /* 最大容量 */
-    int  m_size;         /* 当前元素个数 */
+    int* data;       /* 队列数据数组 */
+    int  front;        /* 队首索引 */
+    int  rear;         /* 队尾索引 */
+    int  capacity;     /* 最大容量 */
+    int  size;         /* 当前元素个数 */
 
 public:
     /* ========== 构造/析构 ========== */
@@ -34,10 +34,10 @@ public:
     int enqueue(int value);
 
     /** @brief 出队（从队首删除） */
-    int dequeue(int* p_out_value);
+    int dequeue(int* out_value);
 
     /** @brief 查看队首元素（不出队） */
-    int peek(int* p_out_value) const;
+    int peek(int* out_value) const;
 
     /* ========== 状态查询 ========== */
 

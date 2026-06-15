@@ -21,24 +21,24 @@
 class CongestionSimulator
 {
 private:
-    GraphBase *m_p_graph; /* 当前操作的图存储 */
+    GraphBase *graph; /* 当前操作的图存储 */
 
     /* 拥堵记录（用于恢复） */
-    int *m_p_modified_from;   /* 被修改道路的起点列表 */
-    int *m_p_modified_to;     /* 被修改道路的终点列表 */
-    int *m_p_original_weight; /* 被修改道路的原始权值 */
-    int m_modify_count;     /* 被修改道路数量 */
-    int m_max_modify;       /* 最大可记录修改数 */
+    int *modified_from;   /* 被修改道路的起点列表 */
+    int *modified_to;     /* 被修改道路的终点列表 */
+    int *original_weight; /* 被修改道路的原始权值 */
+    int modify_count;     /* 被修改道路数量 */
+    int max_modify;       /* 最大可记录修改数 */
 
     /* 对比数据（拥堵前后的路径结果缓存） */
-    int *m_p_before_dist;       /* 拥堵前各城市距离 */
-    int *m_p_before_prev;       /* 拥堵前前驱数组 */
-    int *m_p_after_dist;        /* 拥堵后各城市距离 */
-    int *m_p_after_prev;        /* 拥堵后前驱数组 */
-    int m_analysis_city_count; /* 分析的城市数量 */
+    int *before_dist;       /* 拥堵前各城市距离 */
+    int *before_prev;       /* 拥堵前前驱数组 */
+    int *after_dist;        /* 拥堵后各城市距离 */
+    int *after_prev;        /* 拥堵后前驱数组 */
+    int analysis_city_count; /* 分析的城市数量 */
 
 public:
-    CongestionSimulator(GraphBase *p_graph, int max_modify);
+    CongestionSimulator(GraphBase *graph, int max_modify);
     ~CongestionSimulator();
 
     /* ========== 拥堵操作 ========== */

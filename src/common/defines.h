@@ -25,7 +25,7 @@
  * @brief 安全分配单个对象（调用构造函数）
  * @note  失败时打印错误信息并退出
  *
- * 用法：safe_new(p_graph, AdjMatrix, 100, GRAPH_UNDIRECTED);
+ * 用法：safe_new(graph, AdjMatrix, 100, GRAPH_UNDIRECTED);
  */
 #define safe_new(ptr, Type, ...)                                            \
     do                                                                      \
@@ -60,7 +60,7 @@
 /**
  * @brief 安全释放单个对象（调用析构函数并置空）
  *
- * 用法：safe_delete(p_graph);
+ * 用法：safe_delete(graph);
  */
 #define safe_delete(ptr) \
     do                   \

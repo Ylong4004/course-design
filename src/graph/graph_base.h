@@ -73,10 +73,10 @@ public:
     /**
      * @brief  根据编号获取城市信息
      * @param  city_id  城市编号
-     * @param  p_out_city 输出：城市信息
+     * @param  out_city 输出：城市信息
      * @return 成功返回 SUCCESS
      */
-    virtual int get_vertex(int city_id, City_t *p_out_city) const = 0;
+    virtual int get_vertex(int city_id, City_t *out_city) const = 0;
 
     /* ==================== 边操作 ==================== */
 
@@ -110,10 +110,10 @@ public:
      * @brief  查询边权值
      * @param  from      起点城市编号
      * @param  to        终点城市编号
-     * @param  p_out_weight 输出：边权值
+     * @param  out_weight 输出：边权值
      * @return 成功返回 SUCCESS
      */
-    virtual int get_edge_weight(int from, int to, int *p_out_weight) const = 0;
+    virtual int get_edge_weight(int from, int to, int *out_weight) const = 0;
 
     /**
      * @brief  查询两城市是否直接相连
@@ -126,30 +126,30 @@ public:
     /**
      * @brief  获取指定顶点的所有邻接顶点
      * @param  vertex_id  顶点编号
-     * @param  p_out_neighbors  输出：邻接顶点数组（含权值）
-     * @param  p_out_count      输出：邻接顶点个数
+     * @param  out_neighbors  输出：邻接顶点数组（含权值）
+     * @param  out_count      输出：邻接顶点个数
      * @return 成功返回 SUCCESS
-     * @note   调用方负责释放 p_out_neighbors 内存
+     * @note   调用方负责释放 out_neighbors 内存
      */
     virtual int get_neighbors(int vertex_id,
-                             Edge_t **p_out_neighbors,
-                             int *p_out_count) const = 0;
+                             Edge_t **out_neighbors,
+                             int *out_count) const = 0;
 
     /**
      * @brief  获取所有顶点的编号列表
-     * @param  p_out_ids    输出：顶点编号数组
-     * @param  p_out_count  输出：顶点数量
-     * @note   调用方负责释放 p_out_ids 内存
+     * @param  out_ids    输出：顶点编号数组
+     * @param  out_count  输出：顶点数量
+     * @note   调用方负责释放 out_ids 内存
      */
-    virtual int get_all_vertex_ids(int **p_out_ids, int *p_out_count) const = 0;
+    virtual int get_all_vertex_ids(int **out_ids, int *out_count) const = 0;
 
     /* ==================== 性能统计 ==================== */
 
     /**
      * @brief  获取当前存储结构的性能指标
-     * @param  p_out_stats  输出：性能统计数据
+     * @param  out_stats  输出：性能统计数据
      */
-    virtual void get_performance_stats(PerfStats_t *p_out_stats) const = 0;
+    virtual void get_performance_stats(PerfStats_t *out_stats) const = 0;
 
     /**
      * @brief  重置性能计数器（用于新一轮统计）

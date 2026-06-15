@@ -17,9 +17,9 @@
  */
 class Stack {
 private:
-    int* m_p_data;       /* 栈数据数组 */
-    int  m_top;          /* 栈顶索引（-1 表示空栈） */
-    int  m_capacity;     /* 最大容量 */
+    int* data;       /* 栈数据数组 */
+    int  top;          /* 栈顶索引（-1 表示空栈） */
+    int  capacity;     /* 最大容量 */
 
 public:
     /* ========== 构造/析构 ========== */
@@ -32,10 +32,10 @@ public:
     int push(int value);
 
     /** @brief 弹栈（取出栈顶元素并移除） */
-    int pop(int* p_out_value);
+    int pop(int* out_value);
 
     /** @brief 查看栈顶元素（不弹出） */
-    int peek(int* p_out_value) const;
+    int peek(int* out_value) const;
 
     /* ========== 状态查询 ========== */
 

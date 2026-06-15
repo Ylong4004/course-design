@@ -23,7 +23,7 @@
  */
 class FileManager {
 private:
-    static char s_default_path[256];  /* 默认文件路径缓存 */
+    static char default_path[256];  /* 默认文件路径缓存 */
 
 public:
     FileManager()  {}
@@ -31,28 +31,28 @@ public:
 
     /**
      * @brief  将路网数据保存到 TXT 文件
-     * @param  p_graph     图存储对象
-     * @param  p_filepath  文件路径（nullptr 使用默认路径）
+     * @param  graph     图存储对象
+     * @param  filepath  文件路径（nullptr 使用默认路径）
      * @return 成功返回 SUCCESS
      */
-    static int save_to_file(const GraphBase* p_graph,
-                            const char* p_filepath);
+    static int save_to_file(const GraphBase* graph,
+                            const char* filepath);
 
     /**
      * @brief  从 TXT 文件加载路网数据
-     * @param  p_graph     图存储对象（已初始化）
-     * @param  p_filepath  文件路径（nullptr 使用默认路径）
+     * @param  graph     图存储对象（已初始化）
+     * @param  filepath  文件路径（nullptr 使用默认路径）
      * @return 成功返回 SUCCESS
      */
-    static int load_from_file(GraphBase* p_graph,
-                              const char* p_filepath);
+    static int load_from_file(GraphBase* graph,
+                              const char* filepath);
 
     /**
      * @brief  程序启动时自动加载（调用 load_from_file 默认路径）
-     * @param  p_graph  图存储对象
+     * @param  graph  图存储对象
      * @return 成功返回 SUCCESS，文件不存在返回 ERR_FILE_OPEN_FAIL
      */
-    static int auto_load(GraphBase* p_graph);
+    static int auto_load(GraphBase* graph);
 
     /**
      * @brief  检测默认数据文件是否存在
@@ -63,7 +63,7 @@ public:
      * @brief  设置默认保存文件路径
      * @note   可在程序启动时通过菜单修改
      */
-    static void set_default_path(const char* p_path);
+    static void set_default_path(const char* path);
 };
 
 #endif /* FILE_IO_H */

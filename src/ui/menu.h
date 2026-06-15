@@ -47,10 +47,10 @@
 class MenuSystem
 {
 private:
-    RoadNetwork *m_p_network;            /* 路网管理器 */
-    CongestionSimulator *m_p_simulator;  /* 拥堵模拟器 */
-    StructureComparator *m_p_comparator; /* 性能对比器 */
-    bool m_is_running;                   /* 主循环控制 */
+    RoadNetwork *network;            /* 路网管理器 */
+    CongestionSimulator *simulator;  /* 拥堵模拟器 */
+    StructureComparator *comparator; /* 性能对比器 */
+    bool is_running;                   /* 主循环控制 */
 
 public:
     MenuSystem();
