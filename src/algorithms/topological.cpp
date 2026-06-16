@@ -6,6 +6,7 @@
 
 #include "topological.h"
 #include "queue.h"
+#include "../common/defines.h"
 #include <iostream>
 #include <iomanip>
 
@@ -79,6 +80,7 @@ int run_topological_sort(const GraphBase* graph,
 
     while (!queue.empty()) {
         int u = queue.pop();
+        DEBUG_PRINT("拓扑排序 出队顶点 " << all_ids[u] << "，当前入度=0");
         sequence[seq_len++] = all_ids[u];
 
         /* 删除 u 的所有出边（邻居入度 -1） */
@@ -91,6 +93,7 @@ int run_topological_sort(const GraphBase* graph,
             if (v >= 0) {
                 indegree[v]--;
                 if (indegree[v] == 0) {
+                    DEBUG_PRINT("  顶点 " << all_ids[v] << " 入度降为 0，入队");
                     queue.push(v);
                 }
             }

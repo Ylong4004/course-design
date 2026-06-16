@@ -5,6 +5,7 @@
  */
 
 #include "priority_queue.h"
+#include "../common/defines.h"
 
 PriorityQueue::PriorityQueue(int cap)
     : heap(nullptr),
@@ -24,10 +25,8 @@ PriorityQueue::PriorityQueue(int cap)
 }
 
 PriorityQueue::~PriorityQueue() {
-    delete[] heap;
-    delete[] pos;
-    heap = nullptr;
-    pos = nullptr;
+    safe_delete_array(heap);
+    safe_delete_array(pos);
 }
 
 void PriorityQueue::push(int vertex, int priority) {

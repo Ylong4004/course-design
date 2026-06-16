@@ -5,6 +5,7 @@
  */
 
 #include "adj_matrix.h"
+#include "../common/defines.h"
 
 #include <iostream>
 
@@ -40,10 +41,8 @@ AdjMatrix::AdjMatrix(int max_vertices, GraphType graph_type)
 AdjMatrix::~AdjMatrix() {
     free_matrix();
 
-    delete[] vertices;
-    delete[] valid;
-    vertices = nullptr;
-    valid = nullptr;
+    safe_delete_array(vertices);
+    safe_delete_array(valid);
 }
 
 StorageType AdjMatrix::get_storage_type() const {
@@ -438,9 +437,8 @@ void AdjMatrix::free_matrix() {
     }
 
     for (int i = 0; i < max_vertices; ++i) {
-        delete[] matrix[i];
+        safe_delete_array(matrix[i]);
     }
 
-    delete[] matrix;
-    matrix = nullptr;
+    safe_delete_array(matrix);
 }

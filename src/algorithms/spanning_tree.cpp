@@ -6,6 +6,7 @@
 
 #include "spanning_tree.h"
 #include "union_find.h"
+#include "../common/defines.h"
 #include <iostream>
 #include <iomanip>
 #include <climits>
@@ -107,6 +108,7 @@ int build_mst_prim(const GraphBase* graph, MSTResult_t* out_mst)
         }
 
         in_mst[u] = true;
+        DEBUG_PRINT("Prim 选中顶点 " << all_ids[u] << "，key=" << min_key);
 
         /* 更新邻居 */
         int city_id = all_ids[u];
@@ -251,6 +253,7 @@ int build_mst_kruskal(const GraphBase* graph, MSTResult_t* out_mst)
         if (union_find_find(parent, idx_from) !=
             union_find_find(parent, idx_to)) {
             union_find_union(parent, rank, idx_from, idx_to);
+            DEBUG_PRINT("Kruskal 选中边: " << all_edges[i].from << "→" << all_edges[i].to << " 权值=" << all_edges[i].weight);
             mst_edges[mst_count] = all_edges[i];
             mst_count++;
             total_cost += all_edges[i].weight;

@@ -49,10 +49,8 @@ RoadNetwork::RoadNetwork(int max_vertices, GraphType graph_type)
 
 RoadNetwork::~RoadNetwork()
 {
-    delete matrix_graph;
-    delete list_graph;
-    matrix_graph = nullptr;
-    list_graph = nullptr;
+    safe_delete(matrix_graph);
+    safe_delete(list_graph);
 }
 
 GraphBase *RoadNetwork::get_graph(StorageType type)

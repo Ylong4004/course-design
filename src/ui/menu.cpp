@@ -10,8 +10,13 @@
 #include "formatter.h"
 #include "../services/file_io.h"
 #include "validator.h"
+#include "../algorithms/traversal.h"
+#include "../algorithms/shortest_path.h"
+#include "../algorithms/spanning_tree.h"
+#include "../algorithms/topological.h"
 
 #include "../common/types.h"
+#include "../common/defines.h"
 
 #include <iostream>
 #include <string>
@@ -32,23 +37,7 @@ struct DemoRoad
     int weight;
 };
 
-struct CongestionState
-{
-    bool active;
-    int from;
-    int to;
-    int original_weight;
-    int congested_weight;
-};
-
-bool try_restore_congestion(MenuSystem *menu);
 } // namespace
-
-static void print_service_unavailable(const char *module_name)
-{
-    Formatter::print_warning(module_name);
-    Formatter::print_info("当前仓库还缺少算法层对应的 .cpp 实现，UI 已保留入口。");
-}
 
 static void print_return_hint()
 {
@@ -93,13 +82,9 @@ MenuSystem::~MenuSystem()
 {
         reset_congestion_state();
 
-        delete comparator;
-        delete simulator;
-        delete network;
-
-        comparator = nullptr;
-        simulator = nullptr;
-    network = nullptr;
+        safe_delete(comparator);
+        safe_delete(simulator);
+        safe_delete(network);
 }
 
 void MenuSystem::run()
@@ -302,12 +287,18 @@ void MenuSystem::menu_traversal()
             return;
         }
 
-        Validator::read_int_safe("遍历起点城市编号: ", 1, MAX_CITY_COUNT);
+        GraphBase* graph = network->get_graph(STORAGE_MATRIX);
+        int start = Validator::read_int_safe("遍历起点城市编号: ", 1, MAX_CITY_COUNT);
+        int* seq = nullptr;
+        int len = 0;
         if (choice == 1) {
-            print_service_unavailable("DFS 遍历算法尚未接入。");
+            traverse_dfs(graph, start, &seq, &len);
+            print_traversal_sequence(graph, seq, len, "DFS");
         } else {
-            print_service_unavailable("BFS 遍历算法尚未接入。");
+            traverse_bfs(graph, start, &seq, &len);
+            print_traversal_sequence(graph, seq, len, "BFS");
         }
+        delete[] seq;
         Formatter::pause();
     }
 }
@@ -325,11 +316,28 @@ void MenuSystem::menu_shortest_path()
             return;
         }
 
+        GraphBase* graph = network->get_graph(STORAGE_MATRIX);
         if (choice == 1) {
-            Validator::read_int_safe("起点城市编号: ", 1, MAX_CITY_COUNT);
-            print_service_unavailable("Dijkstra 算法尚未接入。");
+            int start = Validator::read_int_safe("起点城市编号: ", 1, MAX_CITY_COUNT);
+            int vc = graph->get_vertex_count();
+            int* dist = new int[vc];
+            int* prev = new int[vc];
+            run_dijkstra(graph, start, dist, prev);
+            print_dijkstra_result(graph, start, dist, prev);
+            delete[] dist;
+            delete[] prev;
         } else {
-            print_service_unavailable("Floyd 算法尚未接入。");
+            int vc = 0;
+            int** dist = nullptr;
+            int** next = nullptr;
+            run_floyd(graph, &dist, &next, &vc);
+            print_floyd_table(graph, dist, next, vc);
+            for (int i = 0; i < vc; ++i) {
+                delete[] dist[i];
+                delete[] next[i];
+            }
+            delete[] dist;
+            delete[] next;
         }
         Formatter::pause();
     }
@@ -348,11 +356,16 @@ void MenuSystem::menu_spanning_tree()
             return;
         }
 
+        GraphBase* graph = network->get_graph(STORAGE_MATRIX);
+        MSTResult_t mst;
         if (choice == 1) {
-            print_service_unavailable("Prim 最小生成树算法尚未接入。");
+            build_mst_prim(graph, &mst);
+            print_mst_result("Prim", &mst);
         } else {
-            print_service_unavailable("Kruskal 最小生成树算法尚未接入。");
+            build_mst_kruskal(graph, &mst);
+            print_mst_result("Kruskal", &mst);
         }
+        free_mst_result(&mst);
         Formatter::pause();
     }
 }
@@ -360,7 +373,28 @@ void MenuSystem::menu_spanning_tree()
 void MenuSystem::menu_topological_sort()
 {
     Formatter::print_sub_title("拓扑排序");
-    print_service_unavailable("拓扑排序入口已保留，等待 topological.cpp 实现后接入。");
+    GraphBase* graph = network->get_graph(STORAGE_MATRIX);
+
+    if (graph->get_graph_type() != GRAPH_DIRECTED) {
+        Formatter::print_error("拓扑排序仅适用于有向图，"
+                               "当前路网为无向图，无法执行此操作。");
+        Formatter::print_info("提示：请在路网编辑中构建有向图后重试。");
+        Formatter::pause();
+        return;
+    }
+
+    int* seq = nullptr;
+    int len = 0;
+    bool has_cycle = false;
+    int ret = run_topological_sort(graph, &seq, &len, &has_cycle);
+    if (ret != SUCCESS) {
+        Formatter::print_error("拓扑排序执行失败。");
+        delete[] seq;
+        Formatter::pause();
+        return;
+    }
+    print_topo_result(graph, seq, len, has_cycle);
+    delete[] seq;
     Formatter::pause();
 }
 
@@ -544,14 +578,13 @@ void MenuSystem::menu_help()
 
 void MenuSystem::init_network()
 {
-    delete comparator;
-    delete simulator;
-    delete network;
+    safe_delete(comparator);
+    safe_delete(simulator);
+    safe_delete(network);
 
     network = new RoadNetwork(MAX_CITY_COUNT, GRAPH_UNDIRECTED);
     simulator = new CongestionSimulator(network->get_graph(STORAGE_MATRIX), MAX_CITY_COUNT);
-    comparator = new StructureComparator(network->get_graph(STORAGE_MATRIX),
-                                         network->get_graph(STORAGE_LIST));
+    comparator = new StructureComparator(network->get_graph(STORAGE_MATRIX),network->get_graph(STORAGE_LIST));
 }
 
 void MenuSystem::load_default_data()

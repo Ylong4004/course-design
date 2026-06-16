@@ -5,6 +5,7 @@
  */
 
 #include "queue.h"
+#include "../common/defines.h"
 
 Queue::Queue(int cap)
     : data(nullptr),
@@ -18,8 +19,7 @@ Queue::Queue(int cap)
 }
 
 Queue::~Queue() {
-    delete[] data;
-    data = nullptr;
+    safe_delete_array(data);
 }
 
 void Queue::push(int value) {

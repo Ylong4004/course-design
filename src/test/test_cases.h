@@ -109,4 +109,7 @@ int test_save_load_round_trip(); /* 合法：保存再加载，数据一致 */
 int test_load_file_not_found();  /* 非法：文件不存在 */
 int test_load_bad_format();     /* 非法：文件格式错误 */
 
+/* --- 运行入口 --- */
+int run_all_tests();
+
 #endif /* TEST_CASES_H */

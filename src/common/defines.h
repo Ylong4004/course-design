@@ -11,7 +11,7 @@
 
 /* ========================== 调试开关 ========================== */
 
-// #define DEBUG_MODE          /* 开启后输出详细调试信息 */
+//#define DEBUG_MODE          /* 开启后输出详细调试信息 */
 
 #ifdef DEBUG_MODE
 #define DEBUG_PRINT(msg)  std::cout << "[DEBUG] " << msg << std::endl
@@ -79,39 +79,6 @@
     {                          \
         delete[] (ptr);        \
         (ptr) = nullptr;       \
-    } while (0)
-
-/* ========================== 工具宏 ========================== */
-
-/** @brief 取两数较小值 */
-#define min_val(a, b) (((a) < (b)) ? (a) : (b))
-
-/** @brief 取两数较大值 */
-#define max_val(a, b) (((a) > (b)) ? (a) : (b))
-
-/** @brief 交换两个变量 */
-#define swap_val(type, a, b) \
-    do                   \
-    {                    \
-        type _tmp = (a); \
-        (a) = (b);       \
-        (b) = _tmp;      \
-    } while (0)
-
-/** @brief 清空输入缓冲区 */
-#define clear_stdin()                                   \
-    do                                                  \
-    {                                                   \
-        while (std::cin.get() != '\n' && !std::cin.eof()) \
-            ;                                           \
-    } while (0)
-
-/** @brief 按任意键继续 */
-#define pause_console()                          \
-    do                                    \
-    {                                     \
-        std::cout << "\n按 Enter 键继续..."; \
-        clear_stdin();                      \
     } while (0)
 
 #endif /* DEFINES_H */

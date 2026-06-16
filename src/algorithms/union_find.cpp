@@ -5,6 +5,7 @@
  */
 
 #include "union_find.h"
+#include "../common/defines.h"
 
 /*初始化并查集*/
 UnionFind::UnionFind(int size)
@@ -26,10 +27,8 @@ UnionFind::UnionFind(int size)
 
 /*析构函数*/
 UnionFind::~UnionFind() {
-    delete[] parent;
-    delete[] rank;
-    parent = nullptr;
-    rank = nullptr;
+    safe_delete_array(parent);
+    safe_delete_array(rank);
 }
 
 int UnionFind::find_root(int x) {

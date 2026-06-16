@@ -7,6 +7,7 @@
 #include "traversal.h"
 #include "stack.h"
 #include "queue.h"
+#include "../common/defines.h"
 #include <iostream>
 
 /* ========================= DFS ========================== */
@@ -22,6 +23,7 @@ static void dfs_visit(const GraphBase* graph,
 {
     visited[city_id] = true;
     sequence[(*seq_index)++] = city_id;
+    DEBUG_PRINT("DFS 访问顶点 " << city_id);
 
     Edge_t* neighbors = nullptr;
     int neighbor_count = 0;
@@ -119,6 +121,7 @@ int traverse_bfs(const GraphBase* graph,
 
     while (!queue.empty()) {
         int current = queue.pop();
+        DEBUG_PRINT("BFS 出队顶点 " << all_ids[current]);
         sequence[seq_index++] = current;
 
         Edge_t* neighbors = nullptr;

@@ -5,6 +5,7 @@
  */
 
 #include "stack.h"
+#include "../common/defines.h"
 
 Stack::Stack(int cap)
     : data(nullptr),
@@ -16,8 +17,7 @@ Stack::Stack(int cap)
 }
 
 Stack::~Stack() {
-    delete[] data;
-    data = nullptr;
+    safe_delete_array(data);
 }
 
 void Stack::push(int value) {

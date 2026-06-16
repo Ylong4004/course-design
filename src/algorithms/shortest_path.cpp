@@ -5,6 +5,7 @@
  */
 
 #include "shortest_path.h"
+#include "../common/defines.h"
 #include <iostream>
 #include <iomanip>
 #include <climits>
@@ -81,6 +82,7 @@ int run_dijkstra(const GraphBase* graph,
         }
 
         determined[u] = true;
+        DEBUG_PRINT("Dijkstra 选中顶点 " << all_ids[u] << "，距离=" << min_dist);
 
         /* 松弛操作 */
         int city_id = all_ids[u];
@@ -96,6 +98,7 @@ int run_dijkstra(const GraphBase* graph,
                 out_dist[u] != INF_WEIGHT &&
                 out_dist[u] + weight < out_dist[v]) {
                 out_dist[v] = out_dist[u] + weight;
+                DEBUG_PRINT("  松弛: " << all_ids[v] << " 距离更新为 " << out_dist[v]);
                 out_prev[v] = city_id;
             }
         }

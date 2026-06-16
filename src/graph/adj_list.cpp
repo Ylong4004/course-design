@@ -5,6 +5,7 @@
  */
 
 #include "adj_list.h"
+#include "../common/defines.h"
 
 #include <cstring>
 #include <iostream>
@@ -91,8 +92,7 @@ AdjList::~AdjList() {
         }
     }
 
-    delete[] heads;
-    heads = nullptr;
+    safe_delete_array(heads);
 }
 
 StorageType AdjList::get_storage_type() const {
@@ -475,7 +475,7 @@ void AdjList::free_edge_list(int index) {
     EdgeNode_t *curr = heads[index].first_edge;
     while (curr != nullptr) {
         EdgeNode_t *next = curr->next;
-        delete curr;
+        safe_delete(curr);
         curr = next;
     }
 
