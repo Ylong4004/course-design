@@ -6,6 +6,7 @@
 
 #include "union_find.h"
 
+/*初始化并查集*/
 UnionFind::UnionFind(int size)
     : parent(nullptr),
       rank(nullptr),
@@ -18,11 +19,12 @@ UnionFind::UnionFind(int size)
     rank = new int[this->size];
 
     for (int i = 0; i < this->size; ++i) {
-        parent[i] = i;
-        rank[i] = 1;
+        parent[i] = i;//每个元素的父节点是自己
+        rank[i] = 1;//每个元素的秩是1
     }
 }
 
+/*析构函数*/
 UnionFind::~UnionFind() {
     delete[] parent;
     delete[] rank;
@@ -33,15 +35,16 @@ UnionFind::~UnionFind() {
 int UnionFind::find_root(int x) {
     if (x < 0 || x >= size || parent == nullptr) {
         return -1;
-    }
+    }//越界或未初始化
 
     if (parent[x] != x) {
         parent[x] = find_root(parent[x]);
-    }
+    }//路径压缩
 
     return parent[x];
 }
 
+/*按秩合并*/
 void UnionFind::union_sets(int x, int y) {
     int root_x = find_root(x);
     int root_y = find_root(y);
@@ -60,6 +63,7 @@ void UnionFind::union_sets(int x, int y) {
     }
 }
 
+/*判断两个元素是否连通*/
 bool UnionFind::is_connected(int x, int y) {
     int root_x = find_root(x);
     int root_y = find_root(y);
@@ -67,6 +71,7 @@ bool UnionFind::is_connected(int x, int y) {
     return root_x != -1 && root_x == root_y;
 }
 
+/*计算连通分量的个数*/
 int UnionFind::count_sets() const {
     if (parent == nullptr) {
         return 0;
