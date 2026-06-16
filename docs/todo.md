@@ -118,108 +118,57 @@ print_topo_result()
 
 ---
 
-### 第 2 步：服务层 .cpp（4 个文件缺失）— 组员 A+B+C
+## 五、services/ 服务层
 
-#### 2.1 创建 `services/road_network.cpp`（组员 A+B）
-
-```
-- 构造函数（同时 new AdjMatrix + new AdjList）
-- get_graph(type) / get_type()
-- 城市管理 6 个方法（add_city / remove_city / has_city / get_city_name / get_city_count / list_all_cities）
-  → 每个操作在双结构上同步执行
-- 道路管理 6 个方法（add_road / remove_road / update_road_weight / get_road_weight / has_road / get_road_count）
-  → 每个操作在双结构上同步执行
-- print_network_overview() / print_both_structures()
-```
-
-#### 2.2 创建 `services/congestion.cpp`（组员 C）
-
-```
-- 构造/析构（分配/释放修改记录数组）
-- set_congestion(from, to, weight)   // 备份原始权值 + 修改
-- restore_all()                       // 遍历修改记录恢复
-- list_modified_roads()               // 打印修改列表
-- run_comparison(start)               // 拥堵前后分别运行 Dijkstra
-- print_comparison_report(start)      // 输出对比报告
-```
-
-#### 2.3 创建 `services/comparator.cpp`（组员 C）
-
-```
-- 构造/析构
-- measure_memory()           // get_performance_stats 获取两图内存
-- measure_traverse_time()    // 两图运行 DFS+BFS 并计时
-- measure_find_efficiency()  // 两图顶点查找统计比较次数
-- measure_edge_query()       // 两图边查询统计
-- run_full_comparison()      // 运行全部测试 + 输出对比表格
-- print_conclusion()         // 输出推荐适用场景
-```
-
-#### 2.4 创建 `services/file_io.cpp`（组员 A+C）
-
-```
-- save_to_file(graph, filepath)    // std::ofstream 写入
-  → 格式：图类型 城市数 道路数\n城市行...\n道路行...
-- load_from_file(graph, filepath)  // std::ifstream 解析
-- auto_load(graph)                 // 启动时自动加载默认文件
-- data_file_exists()               // 检测文件存在
-- set_default_path(path)           // 设置默认路径
-```
+| #  | 文件                          | 任务                                                    | 负责    |
+| -- | ----------------------------- | ------------------------------------------------------- | ------- |
+| 16 | `road_network.h` / `.cpp` | 🔲**待编码** — 双存储结构同步，城市/道路增删改查 | 组员A+B |
+| 17 | `congestion.h` / `.cpp`   | 🔲**待编码** — 权值修改备份、拥堵前后对比报告    | 组员C   |
+| 18 | `comparator.h` / `.cpp`   | 🔲**待编码** — 四种性能指标统计 + 对比结论       | 组员C   |
+| 19 | `file_io.h` / `.cpp`      | 🔲**待编码** — TXT 保存/加载/自动加载            | 组员A+C |
 
 ---
 
-### 第 3 步：测试层 .cpp（1 个文件缺失）— 组员 C
+## 六、ui/ 交互层
 
-#### 3.1 创建 `test/test_cases.cpp`
-
-```
-TestRunner 类 5 个方法：
-  register_test() / run_all() / run_by_category() / print_report() / run_single()
-
-23 个测试函数：
-  路网构建 8：合法添加、重复、边界容量、删除不存在、自环、负权值
-  图遍历 3：  不连通图 DFS、单顶点 BFS、空图
-  最短路径 3：正常路径、无路径、Floyd vs Dijkstra 交叉验证
-  MST 3：     正常生成树、不连通图、Prim vs Kruskal 交叉验证
-  拓扑排序 3：DAG、有环图、无向图错误调用
-  文件 IO 3： 保存加载回环验证、文件不存在、格式错误
-```
+| #  | 文件                       | 任务                                                          | 负责  |
+| -- | -------------------------- | ------------------------------------------------------------- | ----- |
+| 20 | `menu.h` / `.cpp`      | 🔲**待编码** — 9项主菜单 + 多级子菜单 + 流程调度       | 组员C |
+| 21 | `formatter.h` / `.cpp` | 🔲**待编码** — 分隔线、表格对齐、格式化输出            | 组员C |
+| 22 | `validator.h` / `.cpp` | 🔲**待编码** — 整数/字符串/业务规则校验 + 安全输入函数 | 组员C |
 
 ---
 
-### 第 4 步：完善 main.cpp — 组员 A
+## 七、test/ 测试层
 
-```
-当前状态：已实现编码设置 + 菜单启动
-待补充：
-  - 检测历史数据文件是否存在（FileManager::data_file_exists）
-  - 若存在 → 提示用户是否加载
-  - 若不存在（或拒绝）→ 调用 load_default_data 初始化内置示例路网
-  - 退出时清理 RoadNetwork 等资源
-```
+| #  | 文件                        | 任务                                                 | 负责  |
+| -- | --------------------------- | ---------------------------------------------------- | ----- |
+| 23 | `test_cases.h` / `.cpp` | 🔲**待编码** — 23 个测试用例实现 + TestRunner | 组员C |
 
----
+测试覆盖：
 
-### 第 5 步：menu.cpp 联调 — 组员 C
-
-```
-当前状态：子菜单函数读取了用户输入并校验，但最终调用 print_service_unavailable()
-待接入：
-  - menu_network_edit()    → network->add_city() / add_road() 等
-  - menu_traversal()       → traverse_dfs() / traverse_bfs()
-  - menu_shortest_path()   → run_dijkstra() / run_floyd()
-  - menu_spanning_tree()   → build_mst_prim() / build_mst_kruskal()
-  - menu_topological_sort()→ run_topological_sort()
-  - menu_congestion()      → congestion->set_congestion() / run_comparison()
-  - menu_comparator()      → comparator->run_full_comparison()
-  - menu_file_manage()     → FileManager::save_to_file() / load_from_file()
-```
+| 类别       | 数量 | 内容                                               |
+| ---------- | ---- | -------------------------------------------------- |
+| 路网构建   | 8    | 合法添加、重复、边界容量、删除不存在、自环、负权值 |
+| 图遍历     | 3    | 不连通图 DFS、单顶点 BFS、空图                     |
+| 最短路径   | 3    | 正常路径、无路径、Floyd vs Dijkstra 交叉验证       |
+| 最小生成树 | 3    | 正常生成树、不连通图、Prim vs Kruskal 交叉验证     |
+| 拓扑排序   | 3    | DAG、有环图、无向图错误调用                        |
+| 文件 IO    | 3    | 保存加载回环验证、文件不存在、格式错误             |
 
 ---
 
-### 第 6 步：课程设计报告 — 全体
+## 八、docs/ 文档
 
-按 `general_requipment.md` 第九章分块撰写，组员 C 汇总排版。
+| #  | 文件                   | 任务                                                          | 负责  |
+| -- | ---------------------- | ------------------------------------------------------------- | ----- |
+| 24 | `coding_standard.md` | ✅ 已完成                                                     | 组员A |
+| 25 | `flowcharts.md`      | 🔲**待完成**                                           | 组员A |
+| 26 | 课程设计报告           | 🔲**待编写** — 按 general_requipment.md 第九章分块撰写 | 全体  |
+
+---
+
+## 九、main.cpp 主入口
 
 | 章节 | 撰写人 |
 |------|--------|
