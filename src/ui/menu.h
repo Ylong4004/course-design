@@ -11,6 +11,9 @@
 #include "../services/road_network.h"
 #include "../services/congestion.h"
 #include "../services/comparator.h"
+#include "../services/file_io.h"
+
+#include <string>
 
 /**
  * @class MenuSystem
@@ -50,7 +53,13 @@ private:
     RoadNetwork *network;            /* 路网管理器 */
     CongestionSimulator *simulator;  /* 拥堵模拟器 */
     StructureComparator *comparator; /* 性能对比器 */
-    bool is_running;                   /* 主循环控制 */
+    bool is_running;                 /* 主循环控制 */
+
+    bool congestion_active;          /* 是否存在当前拥堵记录 */
+    int congestion_from;             /* 拥堵道路起点 */
+    int congestion_to;               /* 拥堵道路终点 */
+    int congestion_original_weight;  /* 拥堵前权值 */
+    int congestion_congested_weight;  /* 拥堵后权值 */
 
 public:
     MenuSystem();
@@ -82,6 +91,7 @@ private:
     /* ========== 初始化 ========== */
     void init_network();
     void load_default_data(); /* 首次运行加载示例路网 */
+    void reset_congestion_state();
 };
 
 #endif /* MENU_H */
