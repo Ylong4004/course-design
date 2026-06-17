@@ -23,6 +23,7 @@
 #include <vector>
 #include <fstream>
 #include <cstdlib>
+#include <cstring>
 
 /* 列出 data/ 下所有 .txt 文件 */
 /**
@@ -99,6 +100,7 @@ MenuSystem::MenuSystem()
             congestion_original_weight(INF_WEIGHT),
             congestion_congested_weight(INF_WEIGHT)
 {
+    std::strcpy(current_file_path, "../data/default.txt");
 }
 
 /**
@@ -161,6 +163,12 @@ void MenuSystem::dispatch_choice(int choice)
     switch (choice) {
     case 0:
         if (Validator::read_confirm("确认退出系统？(Y/N): ")) {
+            /* 退出前自动保存到当前路网文件 */
+            GraphBase* g = network->get_graph(STORAGE_MATRIX);
+            if (g != nullptr && g->get_vertex_count() > 0) {
+                FileManager::save_to_file(g, current_file_path);
+                Formatter::print_info("路网已自动保存。");
+            }
             is_running = false;
             Formatter::print_success("系统已退出。");
         }
@@ -600,6 +608,7 @@ void MenuSystem::menu_file_manage()
                 ret = FileManager::load_from_file(list_graph, fpath);
             }
             if (ret == SUCCESS) {
+                std::strcpy(current_file_path, fpath);
                 Formatter::print_success(("已切换至: " + files[fchoice - 1]).c_str());
             } else {
                 Formatter::print_error("路网加载失败，请检查文件格式。");
@@ -608,20 +617,25 @@ void MenuSystem::menu_file_manage()
             continue;
         }
 
-        std::string path;
-        if (choice == 1 || choice == 2 || choice == 4) {
-            Validator::read_str_safe("TXT 文件路径: ", path, 255);
-            if (!Validator::is_valid_file_path(path)) {
-                Formatter::print_error("文件路径非法，路径必须指向 .txt 文件。");
-                Formatter::pause();
-                continue;
+        std::string filename;
+        std::string fullpath;
+        if (choice == 1 || choice == 2) {
+            Validator::read_str_safe("文件名（仅 .txt 后缀，保存在 data/ 目录）: ", filename, 255);
+            if (filename.empty() || filename.size() < 5 ||
+                filename.compare(filename.size() - 4, 4, ".txt") != 0) {
+                filename += ".txt";
             }
+            fullpath = "../data/" + filename;
+        } else if (choice == 4) {
+            Validator::read_str_safe("默认文件路径: ", filename, 255);
+            fullpath = filename;
         }
 
         if (choice == 1) {
-            const int ret = FileManager::save_to_file(matrix_graph, path.c_str());
+            const int ret = FileManager::save_to_file(matrix_graph, fullpath.c_str());
             if (ret == SUCCESS) {
-                Formatter::print_success("路网已保存到文件。");
+                std::strcpy(current_file_path, fullpath.c_str());
+                Formatter::print_success(("路网已保存到 " + fullpath).c_str());
             } else {
                 Formatter::print_error("保存文件失败。");
             }
@@ -629,17 +643,18 @@ void MenuSystem::menu_file_manage()
             reset_congestion_state();
             clear_graph(matrix_graph);
             clear_graph(list_graph);
-            int ret = FileManager::load_from_file(matrix_graph, path.c_str());
+            int ret = FileManager::load_from_file(matrix_graph, fullpath.c_str());
             if (ret == SUCCESS) {
-                ret = FileManager::load_from_file(list_graph, path.c_str());
+                ret = FileManager::load_from_file(list_graph, fullpath.c_str());
             }
             if (ret == SUCCESS) {
-                Formatter::print_success("路网已从文件加载。");
+                std::strcpy(current_file_path, fullpath.c_str());
+                Formatter::print_success(("路网已从文件加载: " + fullpath).c_str());
             } else {
                 Formatter::print_error("加载文件失败。");
             }
         } else if (choice == 4) {
-            FileManager::set_default_path(path.c_str());
+            FileManager::set_default_path(fullpath.c_str());
             Formatter::print_success("默认文件路径已更新。");
         }
         Formatter::pause();
@@ -694,6 +709,7 @@ void MenuSystem::load_default_data()
     if (ret == SUCCESS) {
         ret = FileManager::load_from_file(list_graph, default_file);
         if (ret == SUCCESS) {
+            std::strcpy(current_file_path, default_file);
             Formatter::print_success("已加载默认路网数据（data/default.txt）。");
             return;
         }
@@ -710,6 +726,7 @@ void MenuSystem::load_default_data()
             ret = FileManager::load_from_file(list_graph, f.c_str());
         }
         if (ret == SUCCESS) {
+            std::strcpy(current_file_path, f.c_str());
             Formatter::print_success(("已加载路网文件: " + f).c_str());
             return;
         }

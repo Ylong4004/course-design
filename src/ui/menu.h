@@ -61,6 +61,8 @@ private:
     int congestion_original_weight;  /* 拥堵前权值 */
     int congestion_congested_weight;  /* 拥堵后权值 */
 
+    char current_file_path[256];      /* 当前加载的路网文件路径 */
+
 public:
     MenuSystem();
     ~MenuSystem();

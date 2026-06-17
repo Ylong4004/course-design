@@ -100,6 +100,7 @@ course-design/
 ### 7. 结构性能对比（主菜单 7）
 
 自动统计邻接矩阵 vs 邻接表在四项指标上的差异：
+
 - 内存占用
 - 遍历速度
 - 顶点查找效率
@@ -167,7 +168,8 @@ g++ -std=c++11 -Wall -g3 main.cpp graph/adj_matrix.cpp graph/adj_list.cpp algori
 ### 运行菜单
 
 ```bash
-./src/output/main.exe
+cd ./src/
+./output/main.exe
 ```
 
 ### 运行测试
@@ -177,6 +179,7 @@ g++ -std=c++11 -Wall -g3 main.cpp graph/adj_matrix.cpp graph/adj_list.cpp algori
 ### 调试模式
 
 `src/common/defines.h` 第 12 行，去掉 `//` 开启：
+
 ```cpp
 #define DEBUG_MODE    // 开启 → 算法每一步求解过程全打印
 ```
@@ -191,17 +194,17 @@ g++ -std=c++11 -Wall -g3 main.cpp graph/adj_matrix.cpp graph/adj_list.cpp algori
 
 ## 编码规范速查
 
-| 类别     | 规则                  | 示例                             |
-| -------- | --------------------- | -------------------------------- |
+| 类别     | 规则                    | 示例                                 |
+| -------- | ----------------------- | ------------------------------------ |
 | 局部变量 | `snake_case`          | `city_count`, `start_city`       |
 | 成员变量 | `snake_case`          | `vertex_count`, `max_vertices`   |
 | 常量     | `UPPER_CASE`          | `MAX_CITY_COUNT`, `INF_WEIGHT`   |
 | 公共函数 | `snake_case`          | `add_city()`, `run_dijkstra()`   |
 | 私有函数 | `snake_case`          | `init_matrix()`, `find_index()`  |
-| 结构体   | `PascalCase` + `_t`   | `City_t`, `Edge_t`               |
+| 结构体   | `PascalCase` + `_t` | `City_t`, `Edge_t`               |
 | 类       | `PascalCase`          | `GraphBase`, `AdjMatrix`         |
 | 文件     | `snake_case`          | `graph_base.h`, `adj_matrix.cpp` |
-| 缩进     | 4 空格，禁止 Tab      | —                                |
+| 缩进     | 4 空格，禁止 Tab        | —                                   |
 
 > 详见 [docs/coding_standard.md](docs/coding_standard.md)
 
