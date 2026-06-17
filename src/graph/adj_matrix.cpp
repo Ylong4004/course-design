@@ -9,6 +9,9 @@
 
 #include <iostream>
 
+/**
+ * @brief 构造函数，初始化邻接矩阵存储结构，分配顶点数组和矩阵内存。
+ */
 AdjMatrix::AdjMatrix(int max_vertices, GraphType graph_type)
     : matrix(nullptr),
       vertices(nullptr),
@@ -28,8 +31,8 @@ AdjMatrix::AdjMatrix(int max_vertices, GraphType graph_type)
         return;
     }
 
-    vertices = new City_t[this->max_vertices];
-    valid = new bool[this->max_vertices];
+    safe_new_array(vertices, City_t, this->max_vertices);
+    safe_new_array(valid, bool, this->max_vertices);
 
     for (int i = 0; i < this->max_vertices; ++i) {
         vertices[i].id = INVALID_ID;
@@ -38,6 +41,9 @@ AdjMatrix::AdjMatrix(int max_vertices, GraphType graph_type)
     }
 }
 
+/**
+ * @brief 析构函数，释放邻接矩阵及顶点数组的所有动态内存。
+ */
 AdjMatrix::~AdjMatrix() {
     free_matrix();
 
@@ -45,26 +51,44 @@ AdjMatrix::~AdjMatrix() {
     safe_delete_array(valid);
 }
 
+/**
+ * @brief 返回当前存储结构的类型标识（邻接矩阵）。
+ */
 StorageType AdjMatrix::get_storage_type() const {
     return STORAGE_MATRIX;
 }
 
+/**
+ * @brief 返回存储结构的中文名称。
+ */
 const char *AdjMatrix::get_storage_name() const {
     return "邻接矩阵";
 }
 
+/**
+ * @brief 获取当前图中的顶点数量。
+ */
 int AdjMatrix::get_vertex_count() const {
     return vertex_count;
 }
 
+/**
+ * @brief 获取当前图中的边数量。
+ */
 int AdjMatrix::get_edge_count() const {
     return edge_count;
 }
 
+/**
+ * @brief 获取图的类型（有向图或无向图）。
+ */
 GraphType AdjMatrix::get_graph_type() const {
     return graph_type;
 }
 
+/**
+ * @brief 获取图的最大顶点容量。
+ */
 int AdjMatrix::get_max_vertex_count() const {
     return max_vertices;
 }
@@ -138,10 +162,19 @@ int AdjMatrix::remove_vertex(int city_id) {
     return SUCCESS;
 }
 
+/**
+ * @brief 判断指定城市ID是否存在于图中。
+ */
 bool AdjMatrix::has_vertex(int city_id) const {
     return find_index(city_id) != -1;
 }
 
+/**
+ * @brief 根据城市ID查询城市信息。
+ * @param city_id 要查询的城市ID
+ * @param out_city 输出参数，存放查询到的城市信息
+ * @return SUCCESS 成功，ERR_CITY_NOT_FOUND 城市不存在，ERR_INVALID_INPUT 参数无效
+ */
 int AdjMatrix::get_vertex(int city_id, City_t *out_city) const {
     if (out_city == nullptr) {
         return ERR_INVALID_INPUT;
@@ -188,6 +221,12 @@ int AdjMatrix::add_edge(int from, int to, int weight) {
     return SUCCESS;
 }
 
+/**
+ * @brief 删除图中指定两点之间的道路边。无向图会同时清除对称位置。
+ * @param from 起点城市ID
+ * @param to 终点城市ID
+ * @return SUCCESS 成功，ERR_CITY_NOT_FOUND 城市不存在，ERR_ROAD_NOT_FOUND 边不存在
+ */
 int AdjMatrix::remove_edge(int from, int to) {
     int from_index = find_index(from);
     int to_index = find_index(to);
@@ -209,6 +248,13 @@ int AdjMatrix::remove_edge(int from, int to) {
     return SUCCESS;
 }
 
+/**
+ * @brief 更新指定道路边的权值。无向图会同步更新对称位置。
+ * @param from 起点城市ID
+ * @param to 终点城市ID
+ * @param new_weight 新的权值（必须非负）
+ * @return SUCCESS 成功，ERR_CITY_NOT_FOUND 城市不存在，ERR_ROAD_NOT_FOUND 边不存在，ERR_INVALID_INPUT 权值无效
+ */
 int AdjMatrix::update_edge_weight(int from, int to, int new_weight) {
     if (new_weight < 0) {
         return ERR_INVALID_INPUT;
@@ -233,6 +279,13 @@ int AdjMatrix::update_edge_weight(int from, int to, int new_weight) {
     return SUCCESS;
 }
 
+/**
+ * @brief 查询指定道路边的权值。
+ * @param from 起点城市ID
+ * @param to 终点城市ID
+ * @param out_weight 输出参数，存放边的权值
+ * @return SUCCESS 成功，ERR_CITY_NOT_FOUND 城市不存在，ERR_ROAD_NOT_FOUND 边不存在，ERR_INVALID_INPUT 参数无效
+ */
 int AdjMatrix::get_edge_weight(int from, int to, int *out_weight) const {
     if (out_weight == nullptr) {
         return ERR_INVALID_INPUT;
@@ -253,6 +306,9 @@ int AdjMatrix::get_edge_weight(int from, int to, int *out_weight) const {
     return SUCCESS;
 }
 
+/**
+ * @brief 判断两城市之间是否存在道路边。
+ */
 bool AdjMatrix::has_edge(int from, int to) const {
     int from_index = find_index(from);
     int to_index = find_index(to);
@@ -312,6 +368,14 @@ int AdjMatrix::get_neighbors(int vertex_id,
     return SUCCESS;
 }
 
+/**
+ * @brief 获取图中所有城市ID的列表。
+ *
+ * 调用者负责 delete[] *out_ids。
+ * @param out_ids 输出参数，存放城市ID数组
+ * @param out_count 输出参数，存放城市数量
+ * @return SUCCESS 成功，ERR_INVALID_INPUT 参数无效
+ */
 int AdjMatrix::get_all_vertex_ids(int **out_ids, int *out_count) const {
     if (out_ids == nullptr || out_count == nullptr) {
         return ERR_INVALID_INPUT;
@@ -338,6 +402,10 @@ int AdjMatrix::get_all_vertex_ids(int **out_ids, int *out_count) const {
     return SUCCESS;
 }
 
+/**
+ * @brief 收集当前结构的性能统计数据（内存占用、查找比较次数、边查询次数）。
+ * @param out_stats 输出参数，存放性能统计数据
+ */
 void AdjMatrix::get_performance_stats(PerfStats_t *out_stats) const {
     if (out_stats == nullptr) {
         return;
@@ -357,11 +425,17 @@ void AdjMatrix::get_performance_stats(PerfStats_t *out_stats) const {
     out_stats->edge_query_count = edge_query_count;
 }
 
+/**
+ * @brief 重置所有性能计数器（查找比较次数和边查询次数归零）。
+ */
 void AdjMatrix::reset_perf_counters() {
     find_comparisons = 0;
     edge_query_count = 0;
 }
 
+/**
+ * @brief 以表格形式打印邻接矩阵的全部内容到标准输出。
+ */
 void AdjMatrix::print_graph() const {
     std::cout << "=== Adjacency Matrix ===" << std::endl;
     std::cout << "vertices: " << vertex_count
@@ -398,6 +472,11 @@ void AdjMatrix::print_graph() const {
     std::cout << "========================" << std::endl;
 }
 
+/**
+ * @brief 根据城市ID在顶点数组中线性查找其下标。
+ * @param city_id 要查找的城市ID
+ * @return 找到则返回数组下标，否则返回 -1
+ */
 int AdjMatrix::find_index(int city_id) const {
     if (valid == nullptr || vertices == nullptr) {
         return -1;
@@ -413,6 +492,10 @@ int AdjMatrix::find_index(int city_id) const {
     return -1;
 }
 
+/**
+ * @brief 分配邻接矩阵二维数组内存，并将所有元素初始化为 INF_WEIGHT。
+ * @return SUCCESS 成功
+ */
 int AdjMatrix::init_matrix() {
     matrix = new int *[max_vertices];
 
@@ -421,7 +504,7 @@ int AdjMatrix::init_matrix() {
     }
 
     for (int i = 0; i < max_vertices; ++i) {
-        matrix[i] = new int[max_vertices];
+        safe_new_array(matrix[i], int, max_vertices);
 
         for (int j = 0; j < max_vertices; ++j) {
             matrix[i][j] = INF_WEIGHT;
@@ -431,6 +514,9 @@ int AdjMatrix::init_matrix() {
     return SUCCESS;
 }
 
+/**
+ * @brief 释放邻接矩阵二维数组的全部动态内存。
+ */
 void AdjMatrix::free_matrix() {
     if (matrix == nullptr) {
         return;

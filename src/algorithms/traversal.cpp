@@ -39,6 +39,14 @@ static void dfs_visit(const GraphBase* graph,
     delete[] neighbors;
 }
 
+/**
+ * @brief 深度优先遍历（DFS），从起点出发递归访问所有可达顶点，并处理非连通图
+ * @param graph 图指针
+ * @param start_city 遍历起点城市编号
+ * @param out_sequence 输出遍历序列（调用者需 delete[]）
+ * @param out_length 输出序列长度
+ * @return SUCCESS 或错误码
+ */
 int traverse_dfs(const GraphBase* graph,
                  int start_city,
                  int** out_sequence,
@@ -89,6 +97,14 @@ int traverse_dfs(const GraphBase* graph,
 
 /* ========================= BFS ========================== */
 
+/**
+ * @brief 广度优先遍历（BFS），使用队列逐层访问，并处理非连通图
+ * @param graph 图指针
+ * @param start_city 遍历起点城市编号
+ * @param out_sequence 输出遍历序列（调用者需 delete[]）
+ * @param out_length 输出序列长度
+ * @return SUCCESS 或错误码
+ */
 int traverse_bfs(const GraphBase* graph,
                  int start_city,
                  int** out_sequence,
@@ -176,6 +192,13 @@ int traverse_bfs(const GraphBase* graph,
 
 /* ========================= 格式化输出 ========================== */
 
+/**
+ * @brief 格式化输出遍历序列，打印城市名称和编号
+ * @param graph 图指针
+ * @param sequence 遍历序列数组
+ * @param length 序列长度
+ * @param algo_name 算法名称（如 "DFS"、"BFS"）
+ */
 void print_traversal_sequence(const GraphBase* graph,
                               const int* sequence,
                               int length,

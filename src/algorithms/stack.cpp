@@ -7,19 +7,31 @@
 #include "stack.h"
 #include "../common/defines.h"
 
+/**
+ * @brief 构造函数，初始化顺序栈
+ * @param cap 栈容量
+ */
 Stack::Stack(int cap)
     : data(nullptr),
       top_index(-1),
       capacity(cap > 0 ? cap : 0) {
     if (capacity > 0) {
-        data = new int[capacity]();
+        safe_new_array(data, int, capacity);
+        for (int i = 0; i < capacity; ++i) data[i] = 0;
     }
 }
 
+/**
+ * @brief 析构函数，释放栈内存
+ */
 Stack::~Stack() {
     safe_delete_array(data);
 }
 
+/**
+ * @brief 压栈操作，将元素放入栈顶
+ * @param value 要压栈的元素值
+ */
 void Stack::push(int value) {
     if (full()) {
         return;
@@ -28,6 +40,10 @@ void Stack::push(int value) {
     data[++top_index] = value;
 }
 
+/**
+ * @brief 出栈操作，移除并返回栈顶元素
+ * @return 栈顶元素值，栈为空时返回 -1
+ */
 int Stack::pop() {
     if (empty()) {
         return -1;
@@ -36,6 +52,10 @@ int Stack::pop() {
     return data[top_index--];
 }
 
+/**
+ * @brief 查看栈顶元素但不移除
+ * @return 栈顶元素值，栈为空时返回 -1
+ */
 int Stack::top() const {
     if (empty()) {
         return -1;
@@ -44,22 +64,41 @@ int Stack::top() const {
     return data[top_index];
 }
 
+/**
+ * @brief 判断栈是否为空
+ * @return 栈为空返回 true，否则返回 false
+ */
 bool Stack::empty() const {
     return top_index == -1;
 }
 
+/**
+ * @brief 判断栈是否已满
+ * @return 栈已满返回 true，否则返回 false
+ */
 bool Stack::full() const {
     return capacity <= 0 || top_index == capacity - 1;
 }
 
+/**
+ * @brief 获取当前栈中元素个数
+ * @return 栈中元素的数量
+ */
 int Stack::get_size() const {
     return top_index + 1;
 }
 
+/**
+ * @brief 获取栈容量
+ * @return 栈的最大容量
+ */
 int Stack::get_capacity() const {
     return capacity;
 }
 
+/**
+ * @brief 清空栈，重置栈顶指针
+ */
 void Stack::clear() {
     top_index = -1;
 }

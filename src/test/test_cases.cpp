@@ -64,19 +64,31 @@ static GraphBase* create_cyclic_digraph() {
 
 /* ======================== TestRunner 实现 ======================== */
 
+/**
+ * @brief 构造函数，初始化测试运行器，分配测试用例数组
+ * @param max_cases 最大测试用例数
+ */
 TestRunner::TestRunner(int max_cases) {
     this->max_cases = max_cases > 0 ? max_cases : 50;
-    cases = new TestCase_t[this->max_cases];
+    safe_new_array(cases, TestCase_t, this->max_cases);
     case_count = 0;
     pass_count = 0;
     fail_count = 0;
 }
 
+/**
+ * @brief 析构函数，释放测试用例数组内存
+ */
 TestRunner::~TestRunner() {
-    delete[] cases;
-    cases = nullptr;
+    safe_delete_array(cases);
 }
 
+/**
+ * @brief 注册一个测试用例到运行器中
+ * @param name 测试名称
+ * @param cat 测试分类（合法/非法/边界/性能）
+ * @param func 测试函数指针
+ */
 void TestRunner::register_test(const char* name,
                                TestCategory cat,
                                int (*func)()) {
@@ -89,6 +101,9 @@ void TestRunner::register_test(const char* name,
     ++case_count;
 }
 
+/**
+ * @brief 运行全部已注册的测试用例并输出汇总报告
+ */
 void TestRunner::run_all() {
     pass_count = 0;
     fail_count = 0;
@@ -100,6 +115,10 @@ void TestRunner::run_all() {
     print_report();
 }
 
+/**
+ * @brief 按分类运行测试用例（如仅运行非法数据测试）
+ * @param cat 测试分类
+ */
 void TestRunner::run_by_category(TestCategory cat) {
     pass_count = 0;
     fail_count = 0;
@@ -116,6 +135,10 @@ void TestRunner::run_by_category(TestCategory cat) {
     print_report();
 }
 
+/**
+ * @brief 运行单个测试用例，根据返回值判定通过/失败
+ * @param test_case 测试用例指针
+ */
 void TestRunner::run_single(const TestCase_t* test_case) {
     std::cout << "  测试: " << test_case->name << " ... ";
     int result = test_case->func();
@@ -128,6 +151,9 @@ void TestRunner::run_single(const TestCase_t* test_case) {
     }
 }
 
+/**
+ * @brief 打印测试汇总报告（总计/通过/失败数量）
+ */
 void TestRunner::print_report() const {
     int total = pass_count + fail_count;
     std::cout << std::endl;
@@ -140,6 +166,10 @@ void TestRunner::print_report() const {
 
 /* ======================== 路网构建测试 ======================== */
 
+/**
+ * @brief 合法数据：添加单个城市，验证返回 SUCCESS
+ * @return SUCCESS 或错误码
+ */
 int test_add_city_legal() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     City_t c;
@@ -149,6 +179,10 @@ int test_add_city_legal() {
     return result;
 }
 
+/**
+ * @brief 非法数据：添加重复编号城市，验证返回 ERR_CITY_DUPLICATE
+ * @return SUCCESS 或错误码
+ */
 int test_add_city_duplicate() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     City_t c;
@@ -159,6 +193,10 @@ int test_add_city_duplicate() {
     return (result == ERR_CITY_DUPLICATE) ? SUCCESS : ERR_CITY_DUPLICATE;
 }
 
+/**
+ * @brief 边界数据：添加城市至容量上限后继续添加，验证返回 ERR_GRAPH_FULL
+ * @return SUCCESS 或错误码
+ */
 int test_add_city_boundary_max() {
     const int max = 3;
     GraphBase* g = new AdjMatrix(max, GRAPH_UNDIRECTED);
@@ -173,6 +211,10 @@ int test_add_city_boundary_max() {
     return (result == ERR_GRAPH_FULL) ? SUCCESS : ERR_GRAPH_FULL;
 }
 
+/**
+ * @brief 非法数据：删除不存在的城市，验证返回 ERR_CITY_NOT_FOUND
+ * @return SUCCESS 或错误码
+ */
 int test_remove_city_not_found() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     int result = g->remove_vertex(999);
@@ -180,6 +222,10 @@ int test_remove_city_not_found() {
     return (result == ERR_CITY_NOT_FOUND) ? SUCCESS : ERR_CITY_NOT_FOUND;
 }
 
+/**
+ * @brief 合法数据：在两个已存在城市间添加道路，验证返回 SUCCESS
+ * @return SUCCESS 或错误码
+ */
 int test_add_road_legal() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     City_t c;
@@ -190,6 +236,10 @@ int test_add_road_legal() {
     return result;
 }
 
+/**
+ * @brief 非法数据：重复添加已存在道路，验证返回 ERR_ROAD_EXISTS
+ * @return SUCCESS 或错误码
+ */
 int test_add_road_duplicate() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     City_t c;
@@ -201,6 +251,10 @@ int test_add_road_duplicate() {
     return (result == ERR_ROAD_EXISTS) ? SUCCESS : ERR_ROAD_EXISTS;
 }
 
+/**
+ * @brief 非法数据：添加自环道路（起点=终点），验证返回 ERR_SELF_LOOP
+ * @return SUCCESS 或错误码
+ */
 int test_add_road_self_loop() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     City_t c;
@@ -210,6 +264,10 @@ int test_add_road_self_loop() {
     return (result == ERR_SELF_LOOP) ? SUCCESS : ERR_SELF_LOOP;
 }
 
+/**
+ * @brief 非法数据：添加负权值道路，验证返回 ERR_INVALID_INPUT
+ * @return SUCCESS 或错误码
+ */
 int test_add_road_weight_negative() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     City_t c;
@@ -222,6 +280,10 @@ int test_add_road_weight_negative() {
 
 /* ======================== 遍历测试 ======================== */
 
+/**
+ * @brief 边界数据：DFS 遍历非连通图（两个孤立顶点），验证能输出全部顶点
+ * @return SUCCESS 或错误码
+ */
 int test_dfs_disconnected() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     City_t c;
@@ -236,6 +298,10 @@ int test_dfs_disconnected() {
     return ok ? SUCCESS : ERR_INVALID_INPUT;
 }
 
+/**
+ * @brief 边界数据：BFS 遍历单顶点图，验证序列长度=1
+ * @return SUCCESS 或错误码
+ */
 int test_bfs_single_vertex() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     City_t c;
@@ -249,6 +315,10 @@ int test_bfs_single_vertex() {
     return ok ? SUCCESS : ERR_INVALID_INPUT;
 }
 
+/**
+ * @brief 非法数据：遍历空图，验证返回 ERR_GRAPH_EMPTY
+ * @return SUCCESS 或错误码
+ */
 int test_traversal_empty() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     int* seq = nullptr;
@@ -260,6 +330,10 @@ int test_traversal_empty() {
 
 /* ======================== 最短路径测试 ======================== */
 
+/**
+ * @brief 合法数据：Dijkstra 正常最短路径，验证北京→深圳距离=2250
+ * @return SUCCESS 或错误码
+ */
 int test_dijkstra_normal() {
     GraphBase* g = create_sample_undirected_graph();
     int n = g->get_vertex_count();
@@ -274,6 +348,10 @@ int test_dijkstra_normal() {
     return ok ? SUCCESS : ERR_INVALID_INPUT;
 }
 
+/**
+ * @brief 边界数据：Dijkstra 不连通顶点间最短路径，验证距离=INF_WEIGHT
+ * @return SUCCESS 或错误码
+ */
 int test_dijkstra_no_path() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     City_t c;
@@ -289,6 +367,10 @@ int test_dijkstra_no_path() {
     return ok ? SUCCESS : ERR_INVALID_INPUT;
 }
 
+/**
+ * @brief 性能/交叉验证：Floyd 与 Dijkstra 结果一致性对比
+ * @return SUCCESS 或错误码
+ */
 int test_floyd_compare_dijkstra() {
     GraphBase* g = create_sample_undirected_graph();
     int*** floyd_dist = new int**;
@@ -312,6 +394,10 @@ int test_floyd_compare_dijkstra() {
 
 /* ======================== 最小生成树测试 ======================== */
 
+/**
+ * @brief 合法数据：Prim 最小生成树正常情况，验证边数=顶点数-1
+ * @return SUCCESS 或错误码
+ */
 int test_mst_normal() {
     GraphBase* g = create_sample_undirected_graph();
     MSTResult_t mst;
@@ -323,6 +409,10 @@ int test_mst_normal() {
     return ok ? SUCCESS : ERR_INVALID_INPUT;
 }
 
+/**
+ * @brief 非法数据：MST 不连通图，验证返回 ERR_DISCONNECTED
+ * @return SUCCESS 或错误码
+ */
 int test_mst_disconnected() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     City_t c;
@@ -334,6 +424,10 @@ int test_mst_disconnected() {
     return (result == ERR_DISCONNECTED) ? SUCCESS : ERR_DISCONNECTED;
 }
 
+/**
+ * @brief 性能/交叉验证：Prim 与 Kruskal 总造价一致性对比
+ * @return SUCCESS 或错误码
+ */
 int test_mst_prim_vs_kruskal() {
     GraphBase* g = create_sample_undirected_graph();
     MSTResult_t mst1, mst2;
@@ -348,6 +442,10 @@ int test_mst_prim_vs_kruskal() {
 
 /* ======================== 拓扑排序测试 ======================== */
 
+/**
+ * @brief 合法数据：DAG 拓扑排序，验证无环且序列完整
+ * @return SUCCESS 或错误码
+ */
 int test_topo_dag() {
     GraphBase* g = create_sample_dag();
     int* seq = nullptr;
@@ -361,6 +459,10 @@ int test_topo_dag() {
     return ok ? SUCCESS : ERR_INVALID_INPUT;
 }
 
+/**
+ * @brief 非法数据：含环有向图拓扑排序，验证检测到环路
+ * @return SUCCESS 或错误码
+ */
 int test_topo_has_cycle() {
     GraphBase* g = create_cyclic_digraph();
     int* seq = nullptr;
@@ -373,6 +475,10 @@ int test_topo_has_cycle() {
     return ok ? SUCCESS : ERR_INVALID_INPUT;
 }
 
+/**
+ * @brief 非法数据：对无向图运行拓扑排序，验证返回 ERR_INVALID_INPUT
+ * @return SUCCESS 或错误码
+ */
 int test_topo_undirected_error() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     City_t c;
@@ -390,6 +496,10 @@ int test_topo_undirected_error() {
 
 /* ======================== 文件 IO 测试 ======================== */
 
+/**
+ * @brief 合法数据：保存路网到文件后重新加载，验证顶点数和边数一致
+ * @return SUCCESS 或错误码
+ */
 int test_save_load_round_trip() {
     GraphBase* g = create_sample_undirected_graph();
     const char* test_path = "../data/test_roundtrip.txt";
@@ -420,6 +530,10 @@ int test_save_load_round_trip() {
     return ok ? SUCCESS : ERR_INVALID_INPUT;
 }
 
+/**
+ * @brief 非法数据：加载不存在的文件，验证返回 ERR_FILE_OPEN_FAIL
+ * @return SUCCESS 或错误码
+ */
 int test_load_file_not_found() {
     GraphBase* g = new AdjMatrix(10, GRAPH_UNDIRECTED);
     int result = FileManager::load_from_file(g, "../data/__nonexistent__.txt");
@@ -427,6 +541,10 @@ int test_load_file_not_found() {
     return (result == ERR_FILE_OPEN_FAIL) ? SUCCESS : ERR_FILE_OPEN_FAIL;
 }
 
+/**
+ * @brief 非法数据：加载格式错误的文件，验证返回 ERR_FILE_FORMAT
+ * @return SUCCESS 或错误码
+ */
 int test_load_bad_format() {
     /* 创建一个格式错误的文件 */
     const char* bad_path = "../data/test_bad.txt";

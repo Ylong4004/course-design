@@ -13,6 +13,12 @@
 
 /* ========================== 并查集辅助函数 ========================== */
 
+/**
+ * @brief 并查集查找根节点，带路径压缩
+ * @param parent 父节点数组
+ * @param x 要查找的元素下标
+ * @return 根节点下标
+ */
 int union_find_find(int* parent, int x)
 {
     if (parent[x] != x) {
@@ -21,6 +27,13 @@ int union_find_find(int* parent, int x)
     return parent[x];
 }
 
+/**
+ * @brief 并查集合并两个集合，按秩合并优化
+ * @param parent 父节点数组
+ * @param rank 秩数组
+ * @param x 第一个元素下标
+ * @param y 第二个元素下标
+ */
 void union_find_union(int* parent, int* rank, int x, int y)
 {
     int root_x = union_find_find(parent, x);
@@ -43,6 +56,12 @@ void union_find_union(int* parent, int* rank, int x, int y)
 
 /* ========================= Prim ========================== */
 
+/**
+ * @brief Prim 算法构建最小生成树，适用于无向连通图
+ * @param graph 图指针（必须为无向图）
+ * @param out_mst 输出生成树结果（包含边数组、边数、总造价），调用者需调用 free_mst_result 释放
+ * @return SUCCESS 或错误码
+ */
 int build_mst_prim(const GraphBase* graph, MSTResult_t* out_mst)
 {
     if (graph == nullptr || out_mst == nullptr) {
@@ -164,6 +183,12 @@ int build_mst_prim(const GraphBase* graph, MSTResult_t* out_mst)
 
 /* ========================= Kruskal ========================== */
 
+/**
+ * @brief Kruskal 算法构建最小生成树，使用并查集判环，适用于无向连通图
+ * @param graph 图指针（必须为无向图）
+ * @param out_mst 输出生成树结果（包含边数组、边数、总造价），调用者需调用 free_mst_result 释放
+ * @return SUCCESS 或错误码
+ */
 int build_mst_kruskal(const GraphBase* graph, MSTResult_t* out_mst)
 {
     if (graph == nullptr || out_mst == nullptr) {
@@ -279,6 +304,11 @@ int build_mst_kruskal(const GraphBase* graph, MSTResult_t* out_mst)
 
 /* ========================= 工具函数 ========================== */
 
+/**
+ * @brief 格式化打印最小生成树结果
+ * @param algo_name 算法名称（如 "Prim"、"Kruskal"）
+ * @param mst 生成树结果指针
+ */
 void print_mst_result(const char* algo_name, const MSTResult_t* mst)
 {
     if (algo_name == nullptr || mst == nullptr) {
@@ -306,6 +336,10 @@ void print_mst_result(const char* algo_name, const MSTResult_t* mst)
     std::cout << std::endl;
 }
 
+/**
+ * @brief 释放最小生成树结果中动态分配的边数组内存
+ * @param mst 生成树结果指针
+ */
 void free_mst_result(MSTResult_t* mst)
 {
     if (mst == nullptr) {

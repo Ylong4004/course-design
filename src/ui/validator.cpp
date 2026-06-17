@@ -13,6 +13,11 @@
 #include <cctype>
 #include <cstdlib>
 
+/**
+ * @brief 去除字符串首尾空白字符，返回修剪后的副本。
+ * @param text 输入字符串
+ * @return 修剪后的字符串
+ */
 static std::string trim_copy(const std::string &text)
 {
     const std::string whitespace = " \t\n\r\f\v";
@@ -25,6 +30,12 @@ static std::string trim_copy(const std::string &text)
     return text.substr(begin, end - begin + 1);
 }
 
+/**
+ * @brief 检查字符串从指定位置开始是否全部由十进制数字组成。
+ * @param text 输入字符串
+ * @param begin 起始检查位置
+ * @return true 全为数字，false 包含非数字字符或起始位置越界
+ */
 static bool is_decimal_digits(const std::string &text, std::size_t begin)
 {
     if (begin >= text.size()) {
@@ -41,6 +52,11 @@ static bool is_decimal_digits(const std::string &text, std::size_t begin)
     return true;
 }
 
+/**
+ * @brief 检查字符是否为文件路径中的非法字符（<, >, ", |, ?, *）。
+ * @param ch 待检查字符
+ * @return true 为非法字符，false 合法
+ */
 static bool has_forbidden_path_char(char ch)
 {
     switch (ch) {
@@ -56,6 +72,11 @@ static bool has_forbidden_path_char(char ch)
     }
 }
 
+/**
+ * @brief 检查文件路径是否以 ".txt" 后缀结尾（不区分大小写）。
+ * @param path 文件路径字符串
+ * @return true 是 .txt 文件，false 不是
+ */
 static bool has_txt_suffix(const std::string &path)
 {
     const std::size_t dot_pos = path.find_last_of('.');
@@ -72,6 +93,11 @@ static bool has_txt_suffix(const std::string &path)
     return suffix == "txt";
 }
 
+/**
+ * @brief 将字符串转换为全小写副本，用于不区分大小写的比较。
+ * @param text 输入字符串
+ * @return 全小写字符串
+ */
 static std::string to_lower_copy(const std::string &text)
 {
     std::string result = text;
@@ -82,6 +108,11 @@ static std::string to_lower_copy(const std::string &text)
     return result;
 }
 
+/**
+ * @brief 校验字符串是否可以解析为合法的 int 类型整数。
+ * @param input 输入字符串
+ * @return true 合法，false 非法
+ */
 bool Validator::is_valid_int(const std::string &input)
 {
     const std::string trimmed = trim_copy(input);
@@ -108,6 +139,14 @@ bool Validator::is_valid_int(const std::string &input)
            value <= std::numeric_limits<int>::max();
 }
 
+/**
+ * @brief 校验整数值是否在指定闭区间内，失败时输出错误提示。
+ * @param value 待校验的值
+ * @param min_val 最小值（含）
+ * @param max_val 最大值（含）
+ * @param field_name 字段名称（用于错误提示），可为 nullptr
+ * @return true 在范围内，false 超出范围
+ */
 bool Validator::is_in_range(int value, int min_val, int max_val,
                             const char *field_name)
 {
@@ -126,6 +165,12 @@ bool Validator::is_in_range(int value, int min_val, int max_val,
     return true;
 }
 
+/**
+ * @brief 校验值是否为正整数（>0），失败时输出错误提示。
+ * @param value 待校验的值
+ * @param field_name 字段名称（用于错误提示），可为 nullptr
+ * @return true 为正整数，false 不满足
+ */
 bool Validator::is_positive_int(int value, const char *field_name)
 {
     if (value <= 0) {
@@ -137,6 +182,11 @@ bool Validator::is_positive_int(int value, const char *field_name)
     return true;
 }
 
+/**
+ * @brief 校验城市名称是否合法（非空、长度不超限、不含控制字符）。
+ * @param name 城市名称字符串
+ * @return true 合法，false 非法
+ */
 bool Validator::is_valid_city_name(const std::string &name)
 {
     const std::string trimmed = trim_copy(name);
@@ -157,6 +207,14 @@ bool Validator::is_valid_city_name(const std::string &name)
     return true;
 }
 
+/**
+ * @brief 校验字符串长度是否在指定范围 [min_len, max_len] 内。
+ * @param str 输入字符串
+ * @param min_len 最小长度
+ * @param max_len 最大长度
+ * @param field_name 字段名称（用于错误提示），可为 nullptr
+ * @return true 长度合法，false 不满足
+ */
 bool Validator::check_length(const std::string &str,
                              int min_len, int max_len,
                              const char *field_name)
@@ -177,11 +235,21 @@ bool Validator::check_length(const std::string &str,
     return true;
 }
 
+/**
+ * @brief 校验城市编号是否在合法范围内 [1, MAX_CITY_COUNT]。
+ * @param city_id 城市编号
+ * @return true 合法，false 越界
+ */
 bool Validator::validate_city_id(int city_id)
 {
     return is_in_range(city_id, 1, MAX_CITY_COUNT, "城市编号");
 }
 
+/**
+ * @brief 校验道路权值是否合法（正整数且小于 INF_WEIGHT）。
+ * @param weight 道路权值
+ * @return true 合法，false 非法
+ */
 bool Validator::validate_weight(int weight)
 {
     if (weight <= 0 || weight >= INF_WEIGHT) {
@@ -193,6 +261,12 @@ bool Validator::validate_weight(int weight)
     return true;
 }
 
+/**
+ * @brief 校验起点和终点是否不同，防止自环边。
+ * @param from 起点城市ID
+ * @param to 终点城市ID
+ * @return true 合法（不同），false 起点等于终点
+ */
 bool Validator::validate_no_self_loop(int from, int to)
 {
     if (from == to) {
@@ -204,6 +278,11 @@ bool Validator::validate_no_self_loop(int from, int to)
     return true;
 }
 
+/**
+ * @brief 校验文件路径是否合法（非空、长度不超限、后缀为 .txt、不含非法字符和末尾反斜杠）。
+ * @param path 文件路径字符串
+ * @return true 合法，false 非法
+ */
 bool Validator::is_valid_file_path(const std::string &path)
 {
     const std::string trimmed = trim_copy(path);
@@ -235,6 +314,13 @@ bool Validator::is_valid_file_path(const std::string &path)
     return last != '\\' && last != '/';
 }
 
+/**
+ * @brief 安全地从标准输入读取一个指定范围内的整数，输入不合法时循环重试。
+ * @param prompt 提示字符串，可为 nullptr
+ * @param min_val 允许的最小值
+ * @param max_val 允许的最大值
+ * @return 用户输入的合法整数
+ */
 int Validator::read_int_safe(const char *prompt,
                              int min_val, int max_val)
 {
@@ -267,6 +353,12 @@ int Validator::read_int_safe(const char *prompt,
     }
 }
 
+/**
+ * @brief 安全地从标准输入读取一个非空字符串到缓冲区，可限制最大长度，输入不合法时循环重试。
+ * @param prompt 提示字符串，可为 nullptr
+ * @param buffer 输出缓冲区（引用）
+ * @param max_len 最大允许长度（<=0 时不限制）
+ */
 void Validator::read_str_safe(const char *prompt,
                               std::string &buffer,
                               int max_len)
@@ -298,6 +390,11 @@ void Validator::read_str_safe(const char *prompt,
     }
 }
 
+/**
+ * @brief 安全地读取用户确认输入（支持 Y/Yes/是/N/No/否），不区分大小写，输入不合法时循环重试。
+ * @param prompt 提示字符串，可为 nullptr
+ * @return true 用户确认，false 用户否定
+ */
 bool Validator::read_confirm(const char *prompt)
 {
     while (true) {

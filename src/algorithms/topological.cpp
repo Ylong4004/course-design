@@ -12,6 +12,14 @@
 
 /* ========================= 拓扑排序（Kahn 算法） ========================== */
 
+/**
+ * @brief 拓扑排序（Kahn 算法），使用队列依次输出入度为 0 的顶点
+ * @param graph 图指针（必须为有向图）
+ * @param out_sequence 输出拓扑序列（调用者需 delete[]）
+ * @param out_length 输出序列长度
+ * @param has_cycle 输出是否存在环路
+ * @return SUCCESS 或错误码
+ */
 int run_topological_sort(const GraphBase* graph,
                          int** out_sequence,
                          int* out_length,
@@ -120,6 +128,11 @@ int run_topological_sort(const GraphBase* graph,
 
 /* ========================= 环路检测快捷接口 ========================== */
 
+/**
+ * @brief 环路检测快捷接口，内部调用拓扑排序判断图中是否存在环
+ * @param graph 图指针
+ * @return 存在环返回 true，否则返回 false
+ */
 bool has_cycle(const GraphBase* graph)
 {
     if (graph == nullptr) {
@@ -141,6 +154,13 @@ bool has_cycle(const GraphBase* graph)
 
 /* ========================= 格式化输出 ========================== */
 
+/**
+ * @brief 格式化打印拓扑排序结果，有环时输出死锁分析提示
+ * @param graph 图指针
+ * @param sequence 拓扑序列数组
+ * @param length 序列长度
+ * @param has_cycle 是否存在环路
+ */
 void print_topo_result(const GraphBase* graph,
                        const int* sequence,
                        int length,

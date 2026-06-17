@@ -21,29 +21,49 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <cstdlib>
 
-namespace
+/* 列出 data/ 下所有 .txt 文件 */
+/**
+ * @brief 列出 data/ 目录下所有 .txt 路网文件
+ * @return 文件路径字符串列表
+ */
+static std::vector<std::string> list_network_files()
 {
-struct DemoCity
-{
-    int id;
-    const char *name;
-};
+    std::vector<std::string> files;
+    std::system("dir /b ..\\data\\*.txt > ..\\data\\_list.tmp 2>nul");
+    std::ifstream infile("../data/_list.tmp");
+    if (!infile.is_open()) {
+        return files;
+    }
+    std::string name;
+    while (std::getline(infile, name)) {
+        while (!name.empty() && (name.back() == '\r')) {
+            name.pop_back();
+        }
+        if (!name.empty()) {
+            files.push_back("../data/" + name);
+        }
+    }
+    infile.close();
+    std::remove("../data/_list.tmp");
+    return files;
+}
 
-struct DemoRoad
-{
-    int from;
-    int to;
-    int weight;
-};
-
-} // namespace
-
+/**
+ * @brief 打印"返回主菜单"提示
+ */
 static void print_return_hint()
 {
     std::cout << " 0. 返回主菜单" << std::endl;
 }
 
+/**
+ * @brief 清空图中所有顶点和边
+ * @param graph 图指针
+ * @return SUCCESS 或错误码
+ */
 static int clear_graph(GraphBase *graph)
 {
     if (graph == nullptr) {
@@ -65,6 +85,9 @@ static int clear_graph(GraphBase *graph)
     return SUCCESS;
 }
 
+/**
+ * @brief 构造函数，初始化菜单系统成员变量为默认值
+ */
 MenuSystem::MenuSystem()
     : network(nullptr),
       simulator(nullptr),
@@ -78,6 +101,9 @@ MenuSystem::MenuSystem()
 {
 }
 
+/**
+ * @brief 析构函数，重置拥堵状态并释放所有资源
+ */
 MenuSystem::~MenuSystem()
 {
         reset_congestion_state();
@@ -87,6 +113,9 @@ MenuSystem::~MenuSystem()
         safe_delete(network);
 }
 
+/**
+ * @brief 启动系统主循环：初始化路网 -> 加载默认数据 -> 进入菜单分发循环
+ */
 void MenuSystem::run()
 {
     is_running = true;
@@ -185,9 +214,10 @@ void MenuSystem::menu_network_edit()
         std::cout << " 4. 删除道路" << std::endl;
         std::cout << " 5. 修改道路权值" << std::endl;
         std::cout << " 6. 查看路网总览" << std::endl;
+        std::cout << " 7. 查看全部节点和路径" << std::endl;
         print_return_hint();
 
-        const int choice = get_menu_choice(0, 6);
+        const int choice = get_menu_choice(0, 7);
         if (choice == 0) {
             return;
         }
@@ -206,8 +236,12 @@ void MenuSystem::menu_network_edit()
             const int ret = network->add_city(city_id, city_name.c_str());
             if (ret == SUCCESS) {
                 Formatter::print_success("城市添加成功。");
+            } else if (ret == ERR_CITY_DUPLICATE) {
+                Formatter::print_error("城市编号已存在，请更换编号。");
+            } else if (ret == ERR_GRAPH_FULL) {
+                Formatter::print_error("城市数量已达上限，无法添加。");
             } else {
-                Formatter::print_error("城市添加失败。");
+                std::cerr << "[错误] 城市添加失败（错误码: " << ret << "）。" << std::endl;
             }
         } else if (choice == 2) {
             const int city_id = Validator::read_int_safe("要删除的城市编号: ", 1, MAX_CITY_COUNT);
@@ -215,8 +249,10 @@ void MenuSystem::menu_network_edit()
             const int ret = network->remove_city(city_id);
             if (ret == SUCCESS) {
                 Formatter::print_success("城市删除成功。");
+            } else if (ret == ERR_CITY_NOT_FOUND) {
+                Formatter::print_error("城市编号不存在，无法删除。");
             } else {
-                Formatter::print_error("城市删除失败。");
+                std::cerr << "[错误] 城市删除失败（错误码: " << ret << "）。" << std::endl;
             }
         } else if (choice == 3) {
             const int from = Validator::read_int_safe("起点城市编号: ", 1, MAX_CITY_COUNT);
@@ -232,8 +268,14 @@ void MenuSystem::menu_network_edit()
             const int ret = network->add_road(from, to, weight);
             if (ret == SUCCESS) {
                 Formatter::print_success("道路添加成功。");
+            } else if (ret == ERR_CITY_NOT_FOUND) {
+                Formatter::print_error("起点或终点城市不存在。");
+            } else if (ret == ERR_ROAD_EXISTS) {
+                Formatter::print_error("该道路已存在，请删除后重新添加。");
+            } else if (ret == ERR_SELF_LOOP) {
+                Formatter::print_error("不能添加自环道路（起终点相同）。");
             } else {
-                Formatter::print_error("道路添加失败。");
+                std::cerr << "[错误] 道路添加失败（错误码: " << ret << "）。" << std::endl;
             }
         } else if (choice == 4) {
             const int from = Validator::read_int_safe("起点城市编号: ", 1, MAX_CITY_COUNT);
@@ -247,8 +289,10 @@ void MenuSystem::menu_network_edit()
             const int ret = network->remove_road(from, to);
             if (ret == SUCCESS) {
                 Formatter::print_success("道路删除成功。");
+            } else if (ret == ERR_ROAD_NOT_FOUND) {
+                Formatter::print_error("该道路不存在，无法删除。");
             } else {
-                Formatter::print_error("道路删除失败。");
+                std::cerr << "[错误] 道路删除失败（错误码: " << ret << "）。" << std::endl;
             }
         } else if (choice == 5) {
             const int from = Validator::read_int_safe("起点城市编号: ", 1, MAX_CITY_COUNT);
@@ -264,11 +308,15 @@ void MenuSystem::menu_network_edit()
             const int ret = network->update_road_weight(from, to, weight);
             if (ret == SUCCESS) {
                 Formatter::print_success("道路权值修改成功。");
+            } else if (ret == ERR_ROAD_NOT_FOUND) {
+                Formatter::print_error("该道路不存在，无法修改权值。");
             } else {
-                Formatter::print_error("道路权值修改失败。");
+                std::cerr << "[错误] 道路权值修改失败（错误码: " << ret << "）。" << std::endl;
             }
         } else if (choice == 6) {
             network->print_network_overview();
+        } else if (choice == 7) {
+            network->print_network_detail();
         }
         Formatter::pause();
     }
@@ -513,16 +561,55 @@ void MenuSystem::menu_file_manage()
         Formatter::print_sub_title("数据文件管理");
         std::cout << " 1. 保存路网到文件" << std::endl;
         std::cout << " 2. 从文件加载路网" << std::endl;
-        std::cout << " 3. 设置默认文件路径" << std::endl;
+        std::cout << " 3. 切换路网（从 data/ 选择）" << std::endl;
+        std::cout << " 4. 设置默认文件路径" << std::endl;
         print_return_hint();
 
-        const int choice = get_menu_choice(0, 3);
+        const int choice = get_menu_choice(0, 4);
         if (choice == 0) {
             return;
         }
 
+        GraphBase *matrix_graph = network->get_graph(STORAGE_MATRIX);
+        GraphBase *list_graph = network->get_graph(STORAGE_LIST);
+
+        if (choice == 3) {
+            /* 切换路网：列出 data/ 下所有 .txt 文件 */
+            std::vector<std::string> files = list_network_files();
+            if (files.empty()) {
+                Formatter::print_warning("data/ 目录下没有找到路网文件。");
+                Formatter::pause();
+                continue;
+            }
+            Formatter::print_sub_title("可用路网文件");
+            for (size_t i = 0; i < files.size(); ++i) {
+                std::cout << " " << (i + 1) << ". " << files[i] << std::endl;
+            }
+            std::cout << " 0. 取消" << std::endl;
+            int fchoice = get_menu_choice(0, (int)files.size());
+            if (fchoice == 0) {
+                Formatter::pause();
+                continue;
+            }
+            const char* fpath = files[fchoice - 1].c_str();
+            reset_congestion_state();
+            clear_graph(matrix_graph);
+            clear_graph(list_graph);
+            int ret = FileManager::load_from_file(matrix_graph, fpath);
+            if (ret == SUCCESS) {
+                ret = FileManager::load_from_file(list_graph, fpath);
+            }
+            if (ret == SUCCESS) {
+                Formatter::print_success(("已切换至: " + files[fchoice - 1]).c_str());
+            } else {
+                Formatter::print_error("路网加载失败，请检查文件格式。");
+            }
+            Formatter::pause();
+            continue;
+        }
+
         std::string path;
-        if (choice == 1 || choice == 2 || choice == 3) {
+        if (choice == 1 || choice == 2 || choice == 4) {
             Validator::read_str_safe("TXT 文件路径: ", path, 255);
             if (!Validator::is_valid_file_path(path)) {
                 Formatter::print_error("文件路径非法，路径必须指向 .txt 文件。");
@@ -530,9 +617,6 @@ void MenuSystem::menu_file_manage()
                 continue;
             }
         }
-
-        GraphBase *matrix_graph = network->get_graph(STORAGE_MATRIX);
-        GraphBase *list_graph = network->get_graph(STORAGE_LIST);
 
         if (choice == 1) {
             const int ret = FileManager::save_to_file(matrix_graph, path.c_str());
@@ -543,17 +627,18 @@ void MenuSystem::menu_file_manage()
             }
         } else if (choice == 2) {
             reset_congestion_state();
+            clear_graph(matrix_graph);
+            clear_graph(list_graph);
             int ret = FileManager::load_from_file(matrix_graph, path.c_str());
             if (ret == SUCCESS) {
                 ret = FileManager::load_from_file(list_graph, path.c_str());
             }
-
             if (ret == SUCCESS) {
                 Formatter::print_success("路网已从文件加载。");
             } else {
                 Formatter::print_error("加载文件失败。");
             }
-        } else if (choice == 3) {
+        } else if (choice == 4) {
             FileManager::set_default_path(path.c_str());
             Formatter::print_success("默认文件路径已更新。");
         }
@@ -603,48 +688,34 @@ void MenuSystem::load_default_data()
         return;
     }
 
-    if (FileManager::data_file_exists()) {
-        int ret = FileManager::auto_load(matrix_graph);
+    /* 优先加载 data/default.txt */
+    const char* default_file = "../data/default.txt";
+    int ret = FileManager::load_from_file(matrix_graph, default_file);
+    if (ret == SUCCESS) {
+        ret = FileManager::load_from_file(list_graph, default_file);
         if (ret == SUCCESS) {
-            ret = FileManager::auto_load(list_graph);
-        }
-
-        if (ret == SUCCESS) {
-            Formatter::print_success("历史路网数据加载成功。");
+            Formatter::print_success("已加载默认路网数据（data/default.txt）。");
             return;
         }
+    }
 
-        Formatter::print_warning("历史数据加载失败，已切换为内置示例路网。");
+    /* default.txt 不存在或加载失败，尝试 data/ 下第一个 .txt */
+    std::vector<std::string> files = list_network_files();
+    for (const auto& f : files) {
+        if (f.find("default.txt") != std::string::npos) continue;
         clear_graph(matrix_graph);
         clear_graph(list_graph);
+        ret = FileManager::load_from_file(matrix_graph, f.c_str());
+        if (ret == SUCCESS) {
+            ret = FileManager::load_from_file(list_graph, f.c_str());
+        }
+        if (ret == SUCCESS) {
+            Formatter::print_success(("已加载路网文件: " + f).c_str());
+            return;
+        }
     }
 
-    const DemoCity demo_cities[] = {
-        {1, "City1"},
-        {2, "City2"},
-        {3, "City3"},
-        {4, "City4"},
-        {5, "City5"},
-    };
-
-    const DemoRoad demo_roads[] = {
-        {1, 2, 10},
-        {1, 3, 18},
-        {2, 3, 6},
-        {2, 4, 14},
-        {3, 5, 7},
-        {4, 5, 9},
-    };
-
-    for (const DemoCity &city : demo_cities) {
-        network->add_city(city.id, city.name);
-    }
-
-    for (const DemoRoad &road : demo_roads) {
-        network->add_road(road.from, road.to, road.weight);
-    }
-
-    Formatter::print_info("已加载内置示例路网。");
+    Formatter::print_warning("未找到可用的路网数据文件，请在路网编辑中手动创建城市和道路。");
 }
 
 void MenuSystem::reset_congestion_state()

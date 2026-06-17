@@ -12,6 +12,14 @@
 
 /* ========================= Dijkstra ========================== */
 
+/**
+ * @brief Dijkstra 单源最短路径算法，计算从起点到所有顶点的最短距离
+ * @param graph 图指针
+ * @param start_city 起点城市编号
+ * @param out_dist 输出距离数组（以 city_id 为下标）
+ * @param out_prev 输出前驱数组（以 city_id 为下标）
+ * @return SUCCESS 或错误码
+ */
 int run_dijkstra(const GraphBase* graph,
                  int start_city,
                  int* out_dist,
@@ -113,6 +121,16 @@ int run_dijkstra(const GraphBase* graph,
     return SUCCESS;
 }
 
+/**
+ * @brief 根据 Dijkstra 前驱数组回溯出起点到终点的具体路径
+ * @param prev 前驱数组（以 city_id 为下标）
+ * @param vertex_count 顶点总数
+ * @param start_city 起点城市编号
+ * @param end_city 终点城市编号
+ * @param out_path 输出路径数组（调用者需 delete[]），不可达时为 nullptr
+ * @param out_len 输出路径长度
+ * @return SUCCESS、ALGO_NO_PATH 或错误码
+ */
 int dijkstra_get_path(const int* prev,
                       int vertex_count,
                       int start_city,
@@ -164,6 +182,13 @@ int dijkstra_get_path(const int* prev,
     return SUCCESS;
 }
 
+/**
+ * @brief 格式化打印 Dijkstra 单源最短路径结果表格
+ * @param graph 图指针
+ * @param start_city 起点城市编号
+ * @param dist 距离数组
+ * @param prev 前驱数组
+ */
 void print_dijkstra_result(const GraphBase* graph,
                            int start_city,
                            const int* dist,
@@ -226,6 +251,14 @@ void print_dijkstra_result(const GraphBase* graph,
 
 /* ========================= Floyd ========================== */
 
+/**
+ * @brief Floyd 多源最短路径算法，计算所有顶点对之间的最短距离
+ * @param graph 图指针
+ * @param out_dist 输出距离矩阵（调用者需逐行和整体 delete[]）
+ * @param out_next 输出路径后继矩阵（调用者需逐行和整体 delete[]）
+ * @param vertex_count 输出顶点数量
+ * @return SUCCESS 或错误码
+ */
 int run_floyd(const GraphBase* graph,
               int*** out_dist,
               int*** out_next,
@@ -308,6 +341,16 @@ int run_floyd(const GraphBase* graph,
     return SUCCESS;
 }
 
+/**
+ * @brief 根据 Floyd 后继矩阵还原 from 到 to 的具体路径
+ * @param next 后继矩阵（以 city_id 为行/列下标）
+ * @param vertex_count 顶点总数
+ * @param from 起点城市编号
+ * @param to 终点城市编号
+ * @param out_path 输出路径数组（调用者需 delete[]），不可达时为 nullptr
+ * @param out_len 输出路径长度
+ * @return SUCCESS、ALGO_NO_PATH 或错误码
+ */
 int floyd_get_path(int** next,
                    int vertex_count,
                    int from, int to,
@@ -347,6 +390,13 @@ int floyd_get_path(int** next,
     return SUCCESS;
 }
 
+/**
+ * @brief 格式化打印 Floyd 多源最短路径距离对照表
+ * @param graph 图指针
+ * @param dist 距离矩阵
+ * @param next 后继矩阵
+ * @param vertex_count 顶点数量
+ */
 void print_floyd_table(const GraphBase* graph,
                        int** dist,
                        int** next,

@@ -12,9 +12,14 @@
 #include <string>
 #include <vector>
 
-namespace
-{
-int find_city_index(const int *city_ids, int city_count, int city_id)
+/**
+ * @brief 在已有城市ID数组中线性查找指定城市的下标。
+ * @param city_ids 城市ID数组
+ * @param city_count 城市数量
+ * @param city_id 要查找的城市ID
+ * @return 找到则返回数组下标，否则返回 -1
+ */
+static int find_city_index(const int *city_ids, int city_count, int city_id)
 {
     for (int i = 0; i < city_count; ++i) {
         if (city_ids[i] == city_id) {
@@ -25,7 +30,15 @@ int find_city_index(const int *city_ids, int city_count, int city_id)
     return -1;
 }
 
-void traverse_dfs_component(const GraphBase *graph,
+/**
+ * @brief 从一个起点出发，用栈模拟DFS遍历一个连通分量的所有顶点。
+ * @param graph 图存储结构指针
+ * @param city_ids 全部城市ID数组
+ * @param city_count 城市数量
+ * @param start_index 起点在 city_ids 中的下标
+ * @param visited 访问标记数组（会被原地修改）
+ */
+static void traverse_dfs_component(const GraphBase *graph,
                             const int *city_ids,
                             int city_count,
                             int start_index,
@@ -63,7 +76,15 @@ void traverse_dfs_component(const GraphBase *graph,
     }
 }
 
-void traverse_bfs_component(const GraphBase *graph,
+/**
+ * @brief 从一个起点出发，用队列实现BFS遍历一个连通分量的所有顶点。
+ * @param graph 图存储结构指针
+ * @param city_ids 全部城市ID数组
+ * @param city_count 城市数量
+ * @param start_index 起点在 city_ids 中的下标
+ * @param visited 访问标记数组（会被原地修改）
+ */
+static void traverse_bfs_component(const GraphBase *graph,
                             const int *city_ids,
                             int city_count,
                             int start_index,
@@ -100,6 +121,11 @@ void traverse_bfs_component(const GraphBase *graph,
     }
 }
 
+/**
+ * @brief 对图执行一次完整的 DFS + BFS 遍历并计时，返回遍历总耗时（毫秒）。
+ * @param graph 图存储结构指针
+ * @return 遍历耗时（毫秒），图无效或为空时返回 0.0
+ */
 double benchmark_traversal(const GraphBase *graph)
 {
     if (graph == nullptr) {
@@ -138,8 +164,11 @@ double benchmark_traversal(const GraphBase *graph)
     std::chrono::duration<double, std::milli> duration = end - start;
     return duration.count();
 }
-} // namespace
+/* ---- 辅助函数结束 ---- */
 
+/**
+ * @brief 构造函数，绑定待对比的邻接矩阵和邻接表两套图结构。
+ */
 StructureComparator::StructureComparator(GraphBase *matrix_graph,
                                          GraphBase *list_graph)
     : matrix_graph(matrix_graph),
@@ -147,12 +176,20 @@ StructureComparator::StructureComparator(GraphBase *matrix_graph,
 {
 }
 
+/**
+ * @brief 析构函数，将图指针置空（不负责释放图对象本身）。
+ */
 StructureComparator::~StructureComparator()
 {
     matrix_graph = nullptr;
     list_graph = nullptr;
 }
 
+/**
+ * @brief 分别测量邻接矩阵和邻接表的内存占用（字节数）。
+ * @param out_matrix_bytes 输出参数，邻接矩阵内存占用
+ * @param out_list_bytes 输出参数，邻接表内存占用
+ */
 void StructureComparator::measure_memory(size_t *out_matrix_bytes,
                                          size_t *out_list_bytes) const
 {
@@ -176,6 +213,11 @@ void StructureComparator::measure_memory(size_t *out_matrix_bytes,
     }
 }
 
+/**
+ * @brief 分别测量邻接矩阵和邻接表的遍历耗时（毫秒）。
+ * @param out_matrix_ms 输出参数，邻接矩阵遍历耗时
+ * @param out_list_ms 输出参数，邻接表遍历耗时
+ */
 void StructureComparator::measure_traverse_time(double *out_matrix_ms,
                                                  double *out_list_ms) const
 {
@@ -187,6 +229,11 @@ void StructureComparator::measure_traverse_time(double *out_matrix_ms,
     *out_list_ms = benchmark_traversal(list_graph);
 }
 
+/**
+ * @brief 分别测量邻接矩阵和邻接表的顶点查找效率（比较次数）。
+ * @param out_matrix_cmps 输出参数，邻接矩阵查找比较次数
+ * @param out_list_cmps 输出参数，邻接表查找比较次数
+ */
 void StructureComparator::measure_find_efficiency(int *out_matrix_cmps,
                                                    int *out_list_cmps) const
 {
@@ -228,6 +275,13 @@ void StructureComparator::measure_find_efficiency(int *out_matrix_cmps,
     }
 }
 
+/**
+ * @brief 分别测量邻接矩阵和邻接表的边查询效率（比较次数）。
+ *
+ * 对矩阵使用 O(1) 直接访问，对邻接表使用链表遍历。
+ * @param out_matrix_cmps 输出参数，邻接矩阵边查询比较次数
+ * @param out_list_cmps 输出参数，邻接表边查询比较次数
+ */
 void StructureComparator::measure_edge_query(int *out_matrix_cmps,
                                              int *out_list_cmps) const
 {
@@ -289,6 +343,9 @@ void StructureComparator::measure_edge_query(int *out_matrix_cmps,
     }
 }
 
+/**
+ * @brief 运行完整的性能对比，依次测量内存、遍历耗时、查找效率和边查询效率，并输出对比报告。
+ */
 void StructureComparator::run_full_comparison() const
 {
     std::cout << "=== 结构性能对比报告 ===" << std::endl;
@@ -319,6 +376,9 @@ void StructureComparator::run_full_comparison() const
     print_conclusion();
 }
 
+/**
+ * @brief 打印结构性能对比的总结性结论和建议。
+ */
 void StructureComparator::print_conclusion() const
 {
     std::cout << "=== 对比结论 ===" << std::endl;

@@ -67,6 +67,9 @@ public:
 
     /** @brief 分别打印两种存储结构 */
     void print_both_structures() const;
+
+    /** @brief 打印路网详细信息（全部顶点和边） */
+    void print_network_detail() const;
 };
 
 #endif /* ROAD_NETWORK_H */
