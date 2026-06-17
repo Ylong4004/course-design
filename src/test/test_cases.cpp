@@ -4,6 +4,7 @@
  * 功能描述  : TestRunner 类实现 + 23 个测试用例。
  */
 
+#include "../common/defines.h"
 #include "test_cases.h"
 #include "../graph/adj_matrix.h"
 #include "../graph/adj_list.h"
