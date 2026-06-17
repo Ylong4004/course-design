@@ -98,7 +98,8 @@ MenuSystem::MenuSystem()
             congestion_from(INVALID_ID),
             congestion_to(INVALID_ID),
             congestion_original_weight(INF_WEIGHT),
-            congestion_congested_weight(INF_WEIGHT)
+            congestion_congested_weight(INF_WEIGHT),
+            switch_to_cli(false)
 {
     std::strcpy(current_file_path, "../data/default.txt");
 }
@@ -126,7 +127,7 @@ void MenuSystem::run()
 
     while (is_running) {
         show_main_menu();
-        const int choice = get_menu_choice(0, 9);
+        const int choice = get_menu_choice(0, 10);
         dispatch_choice(choice);
     }
 }
@@ -150,6 +151,7 @@ void MenuSystem::show_main_menu() const
     std::cout << " 7. 结构性能对比" << std::endl;
     std::cout << " 8. 数据文件管理" << std::endl;
     std::cout << " 9. 帮助 / 关于" << std::endl;
+    std::cout << " 10. 命令行模式" << std::endl;
     std::cout << " 0. 退出系统" << std::endl;
 }
 
@@ -199,6 +201,13 @@ void MenuSystem::dispatch_choice(int choice)
         break;
     case 9:
         menu_help();
+        break;
+    case 10:
+        if (Validator::read_confirm("确认切换到命令行模式？(Y/N): ")) {
+            switch_to_cli = true;
+            is_running = false;
+            Formatter::print_info("正在切换到命令行模式...");
+        }
         break;
     default:
         Formatter::print_warning("无效菜单项，请重新选择。");

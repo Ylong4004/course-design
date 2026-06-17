@@ -63,6 +63,8 @@ private:
 
     char current_file_path[256];      /* 当前加载的路网文件路径 */
 
+    bool switch_to_cli;               /* 用户选择切换到命令行模式 */
+
 public:
     MenuSystem();
     ~MenuSystem();
@@ -72,6 +74,18 @@ public:
 
     /** @brief 显示启动欢迎界面 */
     void show_welcome() const;
+
+    /** @brief 是否请求切换到命令行模式 */
+    bool requested_cli_switch() const { return switch_to_cli; }
+
+    /** @brief 获取路网管理器指针（用于命令行模式共享数据） */
+    RoadNetwork* get_network() const { return network; }
+
+    /** @brief 获取拥堵模拟器指针 */
+    CongestionSimulator* get_simulator() const { return simulator; }
+
+    /** @brief 获取性能对比器指针 */
+    StructureComparator* get_comparator() const { return comparator; }
 
 private:
     /* ========== 主菜单 ========== */
