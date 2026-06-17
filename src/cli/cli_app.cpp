@@ -34,7 +34,7 @@ static void cli_init_services(RoadNetwork **out_network,
     GraphBase *list_graph   = (*out_network)->get_graph(STORAGE_LIST);
     GraphBase *matrix_graph = (*out_network)->get_graph(STORAGE_MATRIX);
 
-    safe_new(*out_simulator, CongestionSimulator, list_graph, 100);
+    safe_new(*out_simulator, CongestionSimulator, matrix_graph, 100);
     safe_new(*out_comparator, StructureComparator,
              matrix_graph, list_graph);
 
@@ -66,15 +66,22 @@ static void cli_free_services(RoadNetwork *network,
  */
 static void cli_run_menu()
 {
-    MenuSystem menu;
-    menu.show_welcome();
-    menu.run();
+    /* 菜单 ↔ 命令行 循环切换，直到用户在菜单中选"退出系统" */
+    while (true) {
+        MenuSystem menu;
+        menu.show_welcome();
+        menu.run();
 
-    /* 用户从菜单中选择"命令行模式" */
-    if (menu.requested_cli_switch()) {
-        CommandParser::run_interactive(*menu.get_network(),
-                                       menu.get_simulator(),
-                                       menu.get_comparator());
+        /* 用户从菜单中选择"命令行模式" → 切到 CLI */
+        if (menu.requested_cli_switch()) {
+            CommandParser::run_interactive(*menu.get_network(),
+                                           menu.get_simulator(),
+                                           menu.get_comparator());
+            /* CLI 中键入 menu 回到这里，继续循环 */
+            continue;
+        }
+        /* 用户在菜单中选了"退出系统" → 真正退出 */
+        break;
     }
 }
 
@@ -153,6 +160,13 @@ void cli_run(int argc, char **argv)
             cli_run_batch(argc, argv, network, simulator, comparator);
         }
 
+        /* 退出前自动保存 */
+        if (network != nullptr) {
+            GraphBase *g = network->get_graph(STORAGE_MATRIX);
+            if (g != nullptr && g->get_vertex_count() > 0) {
+                FileManager::save_to_file(g, "../data/default.txt");
+            }
+        }
         cli_free_services(network, simulator, comparator);
     }
 }

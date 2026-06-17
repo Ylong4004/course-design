@@ -2,7 +2,7 @@
 
 > **数据结构课程设计** | 三人协作 | 控制台应用程序
 >
-> 开发环境：Dev-C++ / VSCode | 语言：C/C++（仅标准库） | 版本管理：Git
+> 开发环境： VSCode | 语言：C/C++（仅标准库） | 版本管理：Git
 
 ---
 
@@ -119,7 +119,42 @@ course-design/
 
 显示功能概览。
 
+### 10. 命令行模式（主菜单 10 / --cli 启动）
+
+菜单中选 10 或启动时加 `--cli` 进入。`menu` 切回菜单，`exit` 退出。
+
+| 命令               | 参数                | 说明               |
+| ------------------ | ------------------- | ------------------ |
+| `new_city`       | `<id> <name>`     | 添加城市           |
+| `del_city`       | `<id>`            | 删除城市           |
+| `new_road`       | `<from> <to> <w>` | 添加道路           |
+| `del_road`       | `<from> <to>`     | 删除道路           |
+| `update_road`    | `<from> <to> <w>` | 修改权值           |
+| `show_network`   | —                  | 路网详情           |
+| `dfs`            | `<start>`         | 深度优先遍历       |
+| `bfs`            | `<start>`         | 广度优先遍历       |
+| `dijkstra`       | `<start> [end]`   | 最短路径           |
+| `floyd`          | —                  | 全源最短路径表     |
+| `prim`           | —                  | Prim 最小生成树    |
+| `kruskal`        | —                  | Kruskal 最小生成树 |
+| `topo`           | —                  | 拓扑排序           |
+| `congest`        | `<from> <to> <w>` | 设置拥堵           |
+| `restore`        | —                  | 恢复拥堵           |
+| `congest_list`   | —                  | 查看拥堵记录       |
+| `congest_report` | `<start>`         | 拥堵对比报告       |
+| `compare`        | —                  | 结构性能对比       |
+| `save`           | `[filename]`      | 保存路网           |
+| `load`           | `[filename]`      | 加载路网           |
+| `list`           | —                  | 列出可用路网文件   |
+| `help`           | —                  | 命令帮助           |
+| `menu`           | —                  | 切回菜单模式       |
+| `exit`           | —                  | 退出               |
+
+> 文件名自动补全 `../data/` 前缀和 `.txt` 后缀。
+
 ### 0. 退出系统
+
+退出时自动保存到当前路网文件。
 
 ---
 
@@ -159,17 +194,25 @@ course-design/
 ### 编译
 
 ```bash
-cd src
-g++ -std=c++11 -Wall -g3 main.cpp graph/adj_matrix.cpp graph/adj_list.cpp algorithms/queue.cpp algorithms/stack.cpp algorithms/union_find.cpp algorithms/priority_queue.cpp algorithms/traversal.cpp algorithms/shortest_path.cpp algorithms/spanning_tree.cpp algorithms/topological.cpp services/road_network.cpp services/congestion.cpp services/comparator.cpp services/file_io.cpp ui/menu.cpp ui/formatter.cpp ui/validator.cpp test/test_cases.cpp -o output/main.exe
+cd ./src
+g++ -std=c++11 -Wall -g3 main.cpp graph/adj_matrix.cpp graph/adj_list.cpp algorithms/queue.cpp algorithms/stack.cpp algorithms/union_find.cpp algorithms/priority_queue.cpp algorithms/traversal.cpp algorithms/shortest_path.cpp algorithms/spanning_tree.cpp algorithms/topological.cpp services/road_network.cpp services/congestion.cpp services/comparator.cpp services/file_io.cpp ui/menu.cpp ui/formatter.cpp ui/validator.cpp test/test_cases.cpp cli/cli_app.cpp cli/command_parser.cpp -o output/main.exe
 ```
 
-> VSCode 中按 `Ctrl+Shift+B` → 选"编译全部（19个cpp）"即可。
+> VSCode 中按 `Ctrl+Shift+B` → 选"编译全部（21个cpp）"即可。
 
-### 运行菜单
+### 运行
 
 ```bash
-cd ./src/
+cd ./src
+
+# 菜单模式（无参数，默认）
 ./output/main.exe
+
+# 命令行交互模式
+./output/main.exe --cli
+
+# 单条命令批处理
+./output/main.exe dijkstra 1 5
 ```
 
 ### 运行测试

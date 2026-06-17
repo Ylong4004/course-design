@@ -21,8 +21,8 @@ int main(int argc, char **argv)
     /* Windows 终端默认 GBK 编码，源码是 UTF-8，切换代码页避免中文乱码 */
     std::system("chcp 65001 > nul");
 
-    /* 跑测试：去掉下面两行注释即可 */
-    /* run_all_tests(); return 0; */
+    //跑测试：去掉下面一行注释即可
+    //run_all_tests(); return 0;
 
     cli_run(argc, argv);
 

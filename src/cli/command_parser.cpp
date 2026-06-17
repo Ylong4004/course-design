@@ -105,6 +105,9 @@ void CommandParser::print_help()
         {"compare",                    "邻接矩阵 vs 邻接表 性能对比"},
         {"save [filepath]",            "保存路网（默认路径）"},
         {"load [filepath]",            "加载路网（默认路径）"},
+        {"list",                       "列出 data/ 下可用路网"},
+        {"congest_list",               "查看当前拥堵记录"},
+        {"congest_report <start>",     "拥堵前后对比报告"},
         {"help",                       "显示本帮助"},
         {"menu",                       "切换回菜单模式（仅交互模式）"},
         {"exit / quit",                "退出程序"},
@@ -186,6 +189,9 @@ bool CommandParser::dispatch(const std::vector<std::string> &argv,
     else if (cmd == "compare")   { cmd_compare(network, comparator); }
     else if (cmd == "save")      { cmd_save(argv, network); }
     else if (cmd == "load")      { cmd_load(argv, network); }
+    else if (cmd == "list")      { cmd_list(); }
+    else if (cmd == "congest_list") { cmd_congest_list(simulator); }
+    else if (cmd == "congest_report") { cmd_congest_report(argv, simulator); }
     else if (cmd == "help" || cmd == "?") { print_help(); }
     else if (cmd == "exit" || cmd == "quit") { return false; }
     else {
@@ -621,18 +627,33 @@ void CommandParser::cmd_compare(RoadNetwork &network,
 /*  文件IO命令                                                  */
 /* ============================================================ */
 
+static std::string resolve_path(const std::string &input)
+{
+    /* 如果已含路径分隔符，直接使用；否则自动加 ../data/ 前缀 */
+    if (input.find('/') != std::string::npos ||
+        input.find('\\') != std::string::npos) {
+        return input;
+    }
+    /* 自动补 .txt 后缀 */
+    if (input.size() < 4 || input.compare(input.size() - 4, 4, ".txt") != 0) {
+        return "../data/" + input + ".txt";
+    }
+    return "../data/" + input;
+}
+
 void CommandParser::cmd_save(const std::vector<std::string> &argv,
                              RoadNetwork &network)
 {
-    const char *path = nullptr;
+    std::string fullpath;
     if (argv.size() >= 2) {
-        path = argv[1].c_str();
+        fullpath = resolve_path(argv[1]);
+    } else {
+        fullpath = "../data/default.txt";
     }
     GraphBase *g = network.get_graph(STORAGE_LIST);
-    int rc = FileManager::save_to_file(g, path);
+    int rc = FileManager::save_to_file(g, fullpath.c_str());
     if (rc == SUCCESS) {
-        print_success(path ? ("已保存到: " + std::string(path)).c_str()
-                           : "已保存到默认路径。");
+        print_success(("已保存到: " + fullpath).c_str());
     } else if (rc == ERR_FILE_OPEN_FAIL) {
         print_error("文件打开失败（路径无效或无写入权限）。");
     } else {
@@ -643,18 +664,19 @@ void CommandParser::cmd_save(const std::vector<std::string> &argv,
 void CommandParser::cmd_load(const std::vector<std::string> &argv,
                              RoadNetwork &network)
 {
-    const char *path = nullptr;
+    std::string fullpath;
     if (argv.size() >= 2) {
-        path = argv[1].c_str();
+        fullpath = resolve_path(argv[1]);
+    } else {
+        fullpath = "../data/default.txt";
     }
     GraphBase *g = network.get_graph(STORAGE_LIST);
-    int rc = FileManager::load_from_file(g, path);
+    int rc = FileManager::load_from_file(g, fullpath.c_str());
     if (rc == SUCCESS) {
-        /* 邻接矩阵同步（目前先清空再重新从文件加载） */
+        /* 邻接矩阵同步 */
         GraphBase *mg = network.get_graph(STORAGE_MATRIX);
-        FileManager::load_from_file(mg, path);
-        print_success(path ? ("已从 " + std::string(path) + " 加载。").c_str()
-                           : "已从默认路径加载。");
+        FileManager::load_from_file(mg, fullpath.c_str());
+        print_success(("已从 " + fullpath + " 加载。").c_str());
     } else if (rc == ERR_FILE_OPEN_FAIL) {
         print_error("文件打开失败（文件不存在或无权访问）。");
     } else if (rc == ERR_FILE_FORMAT) {
@@ -662,4 +684,55 @@ void CommandParser::cmd_load(const std::vector<std::string> &argv,
     } else {
         print_error("加载失败。");
     }
+}
+
+/* ============================================================ */
+/*  文件列表 & 拥堵查询命令                                       */
+/* ============================================================ */
+
+void CommandParser::cmd_list()
+{
+    std::system("dir /b ..\\data\\*.txt > ..\\data\\_list.tmp 2>nul");
+    std::ifstream infile("../data/_list.tmp");
+    if (!infile.is_open()) {
+        print_error("无法列出 data/ 目录下的文件。");
+        return;
+    }
+    std::cout << "data/ 目录下的路网文件:" << std::endl;
+    std::string name;
+    bool found = false;
+    while (std::getline(infile, name)) {
+        while (!name.empty() && name.back() == '\r') name.pop_back();
+        if (!name.empty()) {
+            std::cout << "  " << name << std::endl;
+            found = true;
+        }
+    }
+    if (!found) std::cout << "  (空)" << std::endl;
+    infile.close();
+    std::remove("../data/_list.tmp");
+}
+
+void CommandParser::cmd_congest_list(CongestionSimulator *simulator)
+{
+    if (!simulator) {
+        print_error("拥堵模拟器未初始化。");
+        return;
+    }
+    simulator->list_modified_roads();
+}
+
+void CommandParser::cmd_congest_report(const std::vector<std::string> &argv,
+                                        CongestionSimulator *simulator)
+{
+    if (!simulator) {
+        print_error("拥堵模拟器未初始化。");
+        return;
+    }
+    if (argv.size() < 2 || !is_integer(argv[1])) {
+        print_error("用法: congest_report <start_id>");
+        return;
+    }
+    int start = to_int(argv[1]);
+    simulator->print_comparison_report(start);
 }

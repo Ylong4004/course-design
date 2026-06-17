@@ -40,6 +40,9 @@
  *   compare                           — 结构性能对比
  *   save [filepath]                   — 保存到文件
  *   load [filepath]                   — 从文件加载
+ *   list                              — 列出可用路网文件
+ *   congest_list                      — 查看当前拥堵记录
+ *   congest_report <start>            — 拥堵前后对比分析
  *   help                              — 显示命令帮助
  *   menu                              — 切换回菜单模式
  *   exit / quit                       — 退出程序
@@ -109,6 +112,10 @@ private:
                          RoadNetwork &network);
     static void cmd_load(const std::vector<std::string> &argv,
                          RoadNetwork &network);
+    static void cmd_list();
+    static void cmd_congest_list(CongestionSimulator *simulator);
+    static void cmd_congest_report(const std::vector<std::string> &argv,
+                                    CongestionSimulator *simulator);
 
     /* ---------- 工具函数 ---------- */
     static std::vector<std::string> tokenize(const std::string &line);
