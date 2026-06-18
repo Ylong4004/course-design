@@ -195,66 +195,50 @@ course-design/
 
 ## 快速开始
 
-### 方式一：CMake 构建（推荐，支持 Qt GUI）
 
-#### 1. 环境要求
+### CMake 构建（支持 Qt GUI，可选）
 
-| 工具 | 最低版本 | 说明 |
-|------|---------|------|
-| **CMake** | 3.16+ | [下载](https://cmake.org/download/)，或使用 Qt 安装时自带的 CMake |
-| **MinGW-w64** | 8.0+ | GCC/G++ 编译器，推荐使用 Qt 自带的 MinGW 13.1 |
-| **Qt 6**（可选） | 6.2+ | 仅 GUI 版本需要；不装 Qt 仍可编译纯控制台版 |
+GUI 版本需要 MSYS2（约 200MB，无需 8GB 的 Qt 在线安装器）。
 
-#### 2. 安装 Qt 6（仅 GUI 版本需要）
-
-1. 下载 [Qt 在线安装器](https://www.qt.io/download-qt-installer-oss)
-2. 安装时勾选：
-   - **Qt 6.x** → 勾选 `MinGW 13.1.x 64-bit` 组件
-   - **Developer and Designer Tools** → 勾选 `MinGW 13.1.x 64-bit`（Qt 自带的编译器）
-3. 记住安装路径，例如 `D:\Qt`
-
-> 安装完成后无需额外配置环境变量，CMake 会通过 `CMAKE_PREFIX_PATH` 自动查找 Qt。
-
-#### 3. 编译
+#### 1. 安装 MSYS2 + Qt6 库 + CMake
 
 ```powershell
-# 在项目根目录下执行
-# 将 D:\Qt 替换为你的实际 Qt 安装路径
-
-cmake -S . -B build -G "MinGW Makefiles" ^
-    -DCMAKE_PREFIX_PATH="D:\Qt\6.11.1\mingw_64" ^
-    -DCMAKE_BUILD_TYPE=Release
-
-cmake --build build --target traffic_network    # 含 Qt GUI 版本
-cmake --build build --target traffic_console    # 纯控制台版本（不依赖 Qt）
+winget install MSYS2.MSYS2
 ```
 
-> **⚠ 路径含中文的解决办法**：MinGW 的 MOC 工具不支持中文路径，编译前需执行：
-> ```
-> subst T: <项目绝对路径>       # 将项目映射到 T: 盘
-> # 然后在 T:\ 下执行上述 cmake 命令
-> subst T: /D                   # 编译完成后释放虚拟盘
-> ```
-
-#### 4. 运行
-
-编译产物在 `build/bin/` 目录下：
+装完后运行一次 MSYS2 终端更新，然后再装 Qt 和编译工具：
 
 ```powershell
-# Qt 可视化界面模式
-.\build\bin\traffic_network.exe --gui
-
-# 菜单模式（默认）
-.\build\bin\traffic_console.exe
-
-# 命令行交互模式
-.\build\bin\traffic_console.exe --cli
+C:\msys64\usr\bin\bash.exe -lc "pacman -Syu --noconfirm"
+C:\msys64\usr\bin\bash.exe -lc "pacman -S --noconfirm mingw-w64-ucrt-x86_64-qt6-base mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-make"
 ```
+
+#### 2. 编译
+
+```powershell
+# 纯控制台版（不依赖 Qt）
+& "C:\msys64\usr\bin\bash.exe" -lc "export PATH=/ucrt64/bin:`$PATH && cd /e/vscode\ project/course-design && cmake --build build --target traffic_console"
+
+# Qt GUI 版
+& "C:\msys64\usr\bin\bash.exe" -lc "export PATH=/ucrt64/bin:`$PATH && cd /e/vscode\ project/course-design && cmake -S . -B build -G 'MinGW Makefiles' -DCMAKE_PREFIX_PATH=/ucrt64 && cmake --build build --target traffic_network"
+```
+
+#### 3. 运行
+
+编译产物在 `build/bin/`：
+
+```powershell
+.\build\bin\traffic_console.exe              # 菜单模式（默认）
+.\build\bin\traffic_console.exe --cli        # CLI 交互模式
+.\build\bin\traffic_network.exe --gui        # Qt GUI 模式（需先编译 GUI 版）
+```
+
+> **首次运行 GUI 版需要 DLL**：把 `C:\msys64\ucrt64\bin` 加到系统 PATH，或复制 DLL 到 exe 同目录。详见 [MSYS2 文档](https://www.msys2.org/docs/terminals/)。
 
 ---
 
-### 方式二：g++ 直接编译（仅控制台，无需 CMake 和 Qt）
-
+### 直接运行控制台
+#### 编译
 ```bash
 cd ./src
 g++ -std=c++11 -Wall -g3 main.cpp graph/adj_matrix.cpp graph/adj_list.cpp algorithms/queue.cpp algorithms/stack.cpp algorithms/union_find.cpp algorithms/priority_queue.cpp algorithms/traversal.cpp algorithms/shortest_path.cpp algorithms/spanning_tree.cpp algorithms/topological.cpp services/road_network.cpp services/congestion.cpp services/comparator.cpp services/file_io.cpp ui/menu.cpp ui/formatter.cpp ui/validator.cpp test/test_cases.cpp cli/cli_app.cpp cli/command_parser.cpp -o output/main.exe
@@ -262,7 +246,7 @@ g++ -std=c++11 -Wall -g3 main.cpp graph/adj_matrix.cpp graph/adj_list.cpp algori
 
 > VSCode 中按 `Ctrl+Shift+B` → 选"编译全部（21个cpp）"即可。
 
-### 运行
+#### 运行
 
 ```bash
 cd ./src

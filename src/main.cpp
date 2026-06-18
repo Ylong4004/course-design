@@ -11,7 +11,11 @@
 #include "cli/cli_app.h"
 #include "test/test_cases.h"
 
-/* Qt GUI 入口（在 src/qt/qt_app.cpp 中定义，仅 Qt 版本可用） */
+/*
+ * Qt GUI 入口声明（实现在 src/qt/qt_app.cpp）。
+ * QT_GUI_ENABLED 由 CMake 在编译 GUI 版时定义（target_compile_definitions），
+ * 编译纯控制台版时不定义。同一份 main.cpp 产出两种行为
+ */
 #ifdef QT_GUI_ENABLED
 int qt_run(int argc, char **argv);
 #endif
@@ -21,7 +25,7 @@ int qt_run(int argc, char **argv);
  * @note   支持四种启动方式：
  *         1) 无参数      → 菜单模式（默认）
  *         2) --cli / -c  → 命令行交互模式
- *         3) --gui / -g  → Qt 可视化界面模式
+ *         3) --gui / -g  → Qt 可视化界面模式（仅 GUI 版本有效）
  *         4) 命令+参数   → 单条命令批处理模式（执行完即退出）
  */
 int main(int argc, char **argv)
@@ -32,7 +36,8 @@ int main(int argc, char **argv)
     //跑测试：去掉下面一行注释即可
     //run_all_tests(); return 0;
 
-    /* Qt GUI 模式 */
+    /* Qt GUI 模式：编译时定义了 QT_GUI_ENABLED 才真正启动窗口；
+       否则输出友好提示，不会崩溃 */
 #ifdef QT_GUI_ENABLED
     if (argc >= 2 && (std::strcmp(argv[1], "--gui") == 0 ||
                       std::strcmp(argv[1], "-g") == 0)) {
@@ -46,7 +51,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    /* 菜单 / CLI / 批处理 模式 */
+    /*旧的menu.run()语句已迁移到cli_run_menu()函数中，由cli_run()函数调用*/
     cli_run(argc, argv);
 
     return 0;
