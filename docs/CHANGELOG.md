@@ -7,6 +7,32 @@
 
 ---
 
+## [2.0.0] — 2026-06-18
+
+### Added
+- **Qt GUI 可视化界面**（`src/qt/`，7 个模块）：
+  - `qt_app`：主窗口、菜单栏、工具栏、状态栏、标签页布局
+  - `network_view`：路网图可视化（顶点拖拽、滚轮缩放、路径高亮）
+  - `city_panel`：城市增删面板
+  - `road_panel`：道路增删改面板
+  - `algorithm_panel`：算法选择与结果展示（遍历/最短路径/最小生成树/拓扑排序）
+  - `congestion_panel`：拥堵模拟与对比面板
+  - `compare_panel`：邻接矩阵 vs 邻接表性能对比面板
+- **CMake 构建系统**（`CMakeLists.txt`）：
+  - 自动检测 Qt5/Qt6，未安装 Qt 时仍可编译纯控制台版
+  - 两个构建目标：`traffic_network`（含 GUI）、`traffic_console`（纯控制台）
+- 启动参数 `--gui` / `-g` 进入 Qt 可视化界面模式
+
+### Changed
+- `main.cpp` 新增 Qt GUI 模式分派（`#ifdef QT_GUI_ENABLED`）
+- `README.md` 更新：新增 CMake 编译说明、Qt6 安装指南、目录结构更新
+- `.gitignore` 新增 `build/` 编译产物目录
+
+### Fixed
+- `network_view.cpp`：`QWheelEvent::delta()` → `angleDelta().y()`（Qt6 兼容）
+
+---
+
 ## [1.9.2] — 2026-06-18
 
 ### Fixed

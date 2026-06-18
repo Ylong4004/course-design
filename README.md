@@ -1,8 +1,8 @@
 # 城市交通路网分析系统
 
-> **数据结构课程设计** | 三人协作 | 控制台应用程序
+> **数据结构课程设计** | 三人协作 | 控制台 + Qt GUI
 >
-> 开发环境： VSCode | 语言：C/C++（仅标准库） | 版本管理：Git
+> 开发环境： VSCode | 语言：C/C++ | 构建：CMake + MinGW | 版本管理：Git
 
 ---
 
@@ -22,21 +22,25 @@
 
 ```
 course-design/
+├── CMakeLists.txt                   # CMake 构建文件（支持 Qt5/Qt6 + 纯控制台）
 ├── docs/
 │   ├── design_topic.md              # 选题说明
 │   ├── general_requipment.md        # 总体要求（12章）
 │   ├── coding_standard.md           # 代码编写规范
 │   ├── flowcharts.md                # 流程图集（15张 Mermaid 图）
 │   └── todo.md                      # 开发任务清单
-├── src/                             # 源代码（19 个 .cpp）
-│   ├── main.cpp                     # 程序入口（菜单/测试双模式）
+├── src/                             # 源代码
+│   ├── main.cpp                     # 程序入口（菜单/CLI/Qt/批处理）
 │   ├── common/        types.h  defines.h
 │   ├── graph/         graph_base.h  adj_matrix.*  adj_list.*
 │   ├── algorithms/    8 个模块：4 数据结构 + 4 算法
 │   ├── services/      4 个模块：路网/拥堵/对比/文件
 │   ├── ui/            3 个模块：菜单/格式化/校验
-│   ├── test/          test_cases.* (23 个测试用例)
-│   └── output/        main.exe（编译产物）
+│   ├── cli/           2 个模块：命令行交互
+│   ├── qt/            7 个模块：Qt GUI 界面（可选）
+│   └── test/          test_cases.* (23 个测试用例)
+├── build/                           # CMake 编译产物（git 忽略）
+│   └── bin/           traffic_network.exe / traffic_console.exe
 ├── data/                            # 路网数据文件（.txt）
 │   └── default.txt                  # 默认路网
 ├── .gitignore
@@ -191,7 +195,65 @@ course-design/
 
 ## 快速开始
 
-### 编译
+### 方式一：CMake 构建（推荐，支持 Qt GUI）
+
+#### 1. 环境要求
+
+| 工具 | 最低版本 | 说明 |
+|------|---------|------|
+| **CMake** | 3.16+ | [下载](https://cmake.org/download/)，或使用 Qt 安装时自带的 CMake |
+| **MinGW-w64** | 8.0+ | GCC/G++ 编译器，推荐使用 Qt 自带的 MinGW 13.1 |
+| **Qt 6**（可选） | 6.2+ | 仅 GUI 版本需要；不装 Qt 仍可编译纯控制台版 |
+
+#### 2. 安装 Qt 6（仅 GUI 版本需要）
+
+1. 下载 [Qt 在线安装器](https://www.qt.io/download-qt-installer-oss)
+2. 安装时勾选：
+   - **Qt 6.x** → 勾选 `MinGW 13.1.x 64-bit` 组件
+   - **Developer and Designer Tools** → 勾选 `MinGW 13.1.x 64-bit`（Qt 自带的编译器）
+3. 记住安装路径，例如 `D:\Qt`
+
+> 安装完成后无需额外配置环境变量，CMake 会通过 `CMAKE_PREFIX_PATH` 自动查找 Qt。
+
+#### 3. 编译
+
+```powershell
+# 在项目根目录下执行
+# 将 D:\Qt 替换为你的实际 Qt 安装路径
+
+cmake -S . -B build -G "MinGW Makefiles" ^
+    -DCMAKE_PREFIX_PATH="D:\Qt\6.11.1\mingw_64" ^
+    -DCMAKE_BUILD_TYPE=Release
+
+cmake --build build --target traffic_network    # 含 Qt GUI 版本
+cmake --build build --target traffic_console    # 纯控制台版本（不依赖 Qt）
+```
+
+> **⚠ 路径含中文的解决办法**：MinGW 的 MOC 工具不支持中文路径，编译前需执行：
+> ```
+> subst T: <项目绝对路径>       # 将项目映射到 T: 盘
+> # 然后在 T:\ 下执行上述 cmake 命令
+> subst T: /D                   # 编译完成后释放虚拟盘
+> ```
+
+#### 4. 运行
+
+编译产物在 `build/bin/` 目录下：
+
+```powershell
+# Qt 可视化界面模式
+.\build\bin\traffic_network.exe --gui
+
+# 菜单模式（默认）
+.\build\bin\traffic_console.exe
+
+# 命令行交互模式
+.\build\bin\traffic_console.exe --cli
+```
+
+---
+
+### 方式二：g++ 直接编译（仅控制台，无需 CMake 和 Qt）
 
 ```bash
 cd ./src
