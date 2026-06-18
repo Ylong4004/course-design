@@ -22,6 +22,24 @@
 #include <iomanip>
 #include <cstdlib>
 #include <ctime>
+#include <cstring>
+
+/* ============================================================ */
+/*  当前路网文件路径追踪                                          */
+/* ============================================================ */
+
+static char g_current_file[256] = "../data/default.txt";
+
+const char* CommandParser::get_current_file()
+{
+    return g_current_file;
+}
+
+void CommandParser::set_current_file(const char *path)
+{
+    std::strncpy(g_current_file, path, sizeof(g_current_file) - 1);
+    g_current_file[sizeof(g_current_file) - 1] = '\0';
+}
 
 /* ============================================================ */
 /*  工具函数                                                    */
@@ -554,8 +572,15 @@ void CommandParser::cmd_topo(RoadNetwork &network)
     int rc = run_topological_sort(g, &seq, &len, &cycle);
     if (rc == SUCCESS) {
         print_topo_result(g, seq, len, cycle);
+    } else if (rc == ERR_INVALID_INPUT) {
+        if (g->get_graph_type() != GRAPH_DIRECTED) {
+            print_error("拓扑排序仅适用于有向图，当前路网为无向图。"
+                        " 请加载有向图路网文件后重试。");
+        } else {
+            print_error("拓扑排序执行失败：输入参数无效。");
+        }
     } else {
-        print_error("拓扑排序执行失败。");
+        print_error(("拓扑排序执行失败（错误码: " + std::to_string(rc) + "）。").c_str());
     }
     if (seq) delete[] seq;
 }
@@ -647,8 +672,9 @@ void CommandParser::cmd_save(const std::vector<std::string> &argv,
     std::string fullpath;
     if (argv.size() >= 2) {
         fullpath = resolve_path(argv[1]);
+        CommandParser::set_current_file(fullpath.c_str());
     } else {
-        fullpath = "../data/default.txt";
+        fullpath = CommandParser::get_current_file();
     }
     GraphBase *g = network.get_graph(STORAGE_LIST);
     int rc = FileManager::save_to_file(g, fullpath.c_str());
@@ -673,6 +699,7 @@ void CommandParser::cmd_load(const std::vector<std::string> &argv,
     GraphBase *g = network.get_graph(STORAGE_LIST);
     int rc = FileManager::load_from_file(g, fullpath.c_str());
     if (rc == SUCCESS) {
+        CommandParser::set_current_file(fullpath.c_str());
         /* 邻接矩阵同步 */
         GraphBase *mg = network.get_graph(STORAGE_MATRIX);
         FileManager::load_from_file(mg, fullpath.c_str());

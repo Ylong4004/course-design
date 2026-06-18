@@ -42,6 +42,7 @@ static void cli_init_services(RoadNetwork **out_network,
     if (FileManager::data_file_exists()) {
         FileManager::auto_load(list_graph);
         FileManager::auto_load(matrix_graph);
+        CommandParser::set_current_file("../data/default.txt");
     }
 }
 
@@ -160,11 +161,11 @@ void cli_run(int argc, char **argv)
             cli_run_batch(argc, argv, network, simulator, comparator);
         }
 
-        /* 退出前自动保存 */
+        /* 退出前自动保存到当前路网文件 */
         if (network != nullptr) {
             GraphBase *g = network->get_graph(STORAGE_MATRIX);
             if (g != nullptr && g->get_vertex_count() > 0) {
-                FileManager::save_to_file(g, "../data/default.txt");
+                FileManager::save_to_file(g, CommandParser::get_current_file());
             }
         }
         cli_free_services(network, simulator, comparator);

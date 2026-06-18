@@ -67,6 +67,12 @@ public:
     /** @brief 打印命令帮助列表 */
     static void print_help();
 
+    /** @brief 获取当前加载的路网文件路径 */
+    static const char* get_current_file();
+
+    /** @brief 设置当前加载的路网文件路径 */
+    static void set_current_file(const char *path);
+
     /** @brief 启动交互式命令行循环 */
     static void run_interactive(RoadNetwork &network,
                                 CongestionSimulator *simulator,
