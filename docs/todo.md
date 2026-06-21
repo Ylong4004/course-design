@@ -45,7 +45,7 @@
 | 文件                           | 说明                                             | 负责  |
 | ------------------------------ | ------------------------------------------------ | ----- |
 | `docs/coding_standard.md`    | 代码规范：命名/格式/注释/接口/内存/测试/Git/禁忌 | 组员A |
-| `docs/flowcharts.md`         | 15 张 Mermaid 流程图                             | 组员A |
+| `docs/flowcharts.md`         | 5 张 PRG 流程图（Project Graph）                 | 组员A |
 | `docs/design_topic.md`       | 选题说明                                         | 组员A |
 | `docs/general_requipment.md` | 总体要求                                         | —    |
 | `docs/todo.md`               | 本文件                                           | 组员A |
@@ -199,6 +199,6 @@ print_topo_result()
 ✅ 第5步: 服务层          (road_network→file_io→congestion→comparator)
 ✅ 第6步: 测试层          (test_cases.cpp→全系统联调)
 ✅ 第7步: menu.cpp 联调   (占位符 → 真实服务/算法调用)
-🔲 第8步: 完善 main.cpp   (数据文件检测加载)
+✅ 第8步: 完善 main.cpp   (数据文件检测加载)
 🔲 第9步: 课程设计报告
 ```

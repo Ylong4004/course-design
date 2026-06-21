@@ -27,7 +27,7 @@ course-design/
 │   ├── design_topic.md              # 选题说明
 │   ├── general_requipment.md        # 总体要求（12章）
 │   ├── coding_standard.md           # 代码编写规范
-│   ├── flowcharts.md                # 流程图集（15张 Mermaid 图）
+│   ├── flowcharts.md                # 流程图集（5张 PRG 图）
 │   └── todo.md                      # 开发任务清单
 ├── src/                             # 源代码
 │   ├── main.cpp                     # 程序入口（菜单/CLI/Qt/批处理）
