@@ -22,7 +22,6 @@
 
 ```
 course-design/
-├── CMakeLists.txt                   # CMake 构建文件（支持 Qt5/Qt6 + 纯控制台）
 ├── docs/
 │   ├── design_topic.md              # 选题说明
 │   ├── general_requipment.md        # 总体要求（12章）
@@ -31,19 +30,19 @@ course-design/
 │   └── todo.md                      # 开发任务清单
 ├── src/                             # 源代码
 │   ├── main.cpp                     # 程序入口（菜单/CLI/Qt/批处理）
-│   ├── common/        types.h  defines.h
-│   ├── graph/         graph_base.h  adj_matrix.*  adj_list.*
-│   ├── algorithms/    8 个模块：4 数据结构 + 4 算法
-│   ├── services/      4 个模块：路网/拥堵/对比/文件
-│   ├── ui/            3 个模块：菜单/格式化/校验
-│   ├── cli/           2 个模块：命令行交互
-│   ├── qt/            7 个模块：Qt GUI 界面（可选）
-│   ├── test/          test_cases.* (23 个测试用例)
-│   └── output/        g++ 编译产物（已迁移到 bin/）
-├── build/                           # CMake 编译产物（git 忽略）
-│   └── bin/           traffic_network.exe / traffic_console.exe
+│   ├── common/                      # types.h  defines.h
+│   ├── graph/                       # graph_base.h  adj_matrix.*  adj_list.*
+│   ├── algorithms/                  # 8 个模块：4 数据结构 + 4 算法
+│   ├── services/                    # 4 个模块：路网/拥堵/对比/文件
+│   ├── ui/                          # 3 个模块：菜单/格式化/校验
+│   ├── cli/                         # 2 个模块：命令行交互
+│   ├── qt/                          # 7 个模块：Qt GUI 界面（可选）
+│   └── test/                        # test_cases.* (23 个测试用例)
+├── bin/                             # 二进制程序文件
+│   └── network_console.exe          # g++编译产物
 ├── data/                            # 路网数据文件（.txt）
 │   └── default.txt                  # 默认路网
+├── CMakeLists.txt                   # CMake 构建文件（支持 Qt5/Qt6 + 纯控制台）
 ├── .gitignore
 └── README.md
 ```
