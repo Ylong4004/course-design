@@ -94,7 +94,7 @@ void MainWindow::init_services()
 {
     safe_new(m_network, RoadNetwork, MAX_CITY_COUNT, GRAPH_UNDIRECTED);
 
-    GraphBase *list_graph   = m_network->get_graph(STORAGE_LIST);
+    GraphBase *list_graph = m_network->get_graph(STORAGE_LIST);
     GraphBase *matrix_graph = m_network->get_graph(STORAGE_MATRIX);
 
     safe_new(m_simulator, CongestionSimulator, list_graph, 100);
@@ -103,7 +103,8 @@ void MainWindow::init_services()
 
 void MainWindow::load_default_data()
 {
-    if (FileManager::data_file_exists()) {
+    if (FileManager::data_file_exists())
+    {
         GraphBase *lg = m_network->get_graph(STORAGE_LIST);
         GraphBase *mg = m_network->get_graph(STORAGE_MATRIX);
         FileManager::auto_load(lg);
@@ -117,22 +118,22 @@ void MainWindow::load_default_data()
 
 void MainWindow::create_actions()
 {
-    m_act_add_city  = new QAction("新增城市", this);
-    m_act_add_road  = new QAction("新增道路", this);
-    m_act_save      = new QAction("保存路网", this);
-    m_act_load      = new QAction("加载路网", this);
-    m_act_refresh   = new QAction("刷新视图", this);
+    m_act_add_city = new QAction("新增城市", this);
+    m_act_add_road = new QAction("新增道路", this);
+    m_act_save = new QAction("保存路网", this);
+    m_act_load = new QAction("加载路网", this);
+    m_act_refresh = new QAction("刷新视图", this);
 
-    connect(m_act_add_city,  &QAction::triggered,
-            this,            &MainWindow::on_add_city);
-    connect(m_act_add_road,  &QAction::triggered,
-            this,            &MainWindow::on_add_road);
-    connect(m_act_save,      &QAction::triggered,
-            this,            &MainWindow::on_save_file);
-    connect(m_act_load,      &QAction::triggered,
-            this,            &MainWindow::on_load_file);
-    connect(m_act_refresh,   &QAction::triggered,
-            this,            &MainWindow::on_refresh_view);
+    connect(m_act_add_city, &QAction::triggered,
+            this, &MainWindow::on_add_city);
+    connect(m_act_add_road, &QAction::triggered,
+            this, &MainWindow::on_add_road);
+    connect(m_act_save, &QAction::triggered,
+            this, &MainWindow::on_save_file);
+    connect(m_act_load, &QAction::triggered,
+            this, &MainWindow::on_load_file);
+    connect(m_act_refresh, &QAction::triggered,
+            this, &MainWindow::on_refresh_view);
 }
 
 void MainWindow::create_toolbar()
@@ -165,46 +166,41 @@ void MainWindow::create_dock_panels()
     m_city_panel = new CityPanel(m_network, this);
     QDockWidget *city_dock = new QDockWidget("城市管理", this);
     city_dock->setWidget(m_city_panel);
-    city_dock->setAllowedAreas(Qt::LeftDockWidgetArea
-                               | Qt::RightDockWidgetArea);
+    city_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     addDockWidget(Qt::RightDockWidgetArea, city_dock);
 
     connect(m_city_panel, &CityPanel::city_changed,
-            this,          &MainWindow::on_network_changed);
+            this, &MainWindow::on_network_changed);
 
     /* 道路管理面板 */
     m_road_panel = new RoadPanel(m_network, this);
     QDockWidget *road_dock = new QDockWidget("道路管理", this);
     road_dock->setWidget(m_road_panel);
-    road_dock->setAllowedAreas(Qt::LeftDockWidgetArea
-                               | Qt::RightDockWidgetArea);
+    road_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     addDockWidget(Qt::RightDockWidgetArea, road_dock);
 
     connect(m_road_panel, &RoadPanel::road_changed,
-            this,          &MainWindow::on_network_changed);
+            this, &MainWindow::on_network_changed);
 
     /* 算法面板 */
     m_algo_panel = new AlgorithmPanel(m_network, this);
     QDockWidget *algo_dock = new QDockWidget("算法执行", this);
     algo_dock->setWidget(m_algo_panel);
-    algo_dock->setAllowedAreas(Qt::LeftDockWidgetArea
-                               | Qt::RightDockWidgetArea);
+    algo_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     addDockWidget(Qt::RightDockWidgetArea, algo_dock);
 
     /* 拥堵模拟面板 */
     m_congest_panel = new CongestionPanel(m_network, m_simulator, this);
     QDockWidget *congest_dock = new QDockWidget("拥堵模拟", this);
     congest_dock->setWidget(m_congest_panel);
-    congest_dock->setAllowedAreas(Qt::LeftDockWidgetArea
-                                  | Qt::RightDockWidgetArea);
+    congest_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     addDockWidget(Qt::RightDockWidgetArea, congest_dock);
 
     /* 性能对比面板 */
     m_compare_panel = new ComparePanel(m_comparator, this);
     QDockWidget *compare_dock = new QDockWidget("性能对比", this);
     compare_dock->setWidget(m_compare_panel);
-    compare_dock->setAllowedAreas(Qt::LeftDockWidgetArea
-                                  | Qt::RightDockWidgetArea);
+    compare_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     addDockWidget(Qt::RightDockWidgetArea, compare_dock);
 }
 
@@ -214,14 +210,16 @@ void MainWindow::create_dock_panels()
 
 void MainWindow::on_add_city()
 {
-    if (m_city_panel) {
+    if (m_city_panel)
+    {
         m_city_panel->focus_add_city();
     }
 }
 
 void MainWindow::on_add_road()
 {
-    if (m_road_panel) {
+    if (m_road_panel)
+    {
         m_road_panel->focus_add_road();
     }
 }
@@ -229,42 +227,51 @@ void MainWindow::on_add_road()
 void MainWindow::on_save_file()
 {
     QString path = QFileDialog::getSaveFileName(
-        this, "保存路网", "../data/", "路网文件 (*.txt)");
-    if (path.isEmpty()) return;
+        this, "保存路网", "./data/", "路网文件 (*.txt)");
+    if (path.isEmpty())
+        return;
 
     GraphBase *g = m_network->get_graph(STORAGE_LIST);
     int rc = FileManager::save_to_file(g,
-        path.toLocal8Bit().constData());
-    if (rc == SUCCESS) {
+                                       path.toLocal8Bit().constData());
+    if (rc == SUCCESS)
+    {
         statusBar()->showMessage("已保存: " + path, 3000);
-    } else {
+    }
+    else
+    {
         QMessageBox::warning(this, "保存失败",
-            "文件保存失败，请检查路径权限。");
+                             "文件保存失败，请检查路径权限。");
     }
 }
 
 void MainWindow::on_load_file()
 {
     QString path = QFileDialog::getOpenFileName(
-        this, "加载路网", "../data/", "路网文件 (*.txt)");
-    if (path.isEmpty()) return;
+        this, "加载路网", "./data/", "路网文件 (*.txt)");
+    if (path.isEmpty())
+        return;
 
     GraphBase *lg = m_network->get_graph(STORAGE_LIST);
     GraphBase *mg = m_network->get_graph(STORAGE_MATRIX);
 
     int rc = FileManager::load_from_file(lg,
-        path.toLocal8Bit().constData());
-    if (rc == SUCCESS) {
+                                         path.toLocal8Bit().constData());
+    if (rc == SUCCESS)
+    {
         FileManager::load_from_file(mg,
-            path.toLocal8Bit().constData());
+                                    path.toLocal8Bit().constData());
     }
 
-    if (rc == SUCCESS) {
+    if (rc == SUCCESS)
+    {
         on_network_changed();
         statusBar()->showMessage("已加载: " + path, 3000);
-    } else {
+    }
+    else
+    {
         QMessageBox::warning(this, "加载失败",
-            "文件格式错误或文件不存在。");
+                             "文件格式错误或文件不存在。");
     }
 }
 
@@ -280,21 +287,25 @@ void MainWindow::on_refresh_view()
 void MainWindow::on_network_changed()
 {
     /* 刷新路网画布 */
-    if (m_network_view) {
+    if (m_network_view)
+    {
         m_network_view->refresh();
     }
 
     /* 刷新状态栏 */
     int city_count = 0;
     int road_count = 0;
-    if (m_network) {
+    if (m_network)
+    {
         city_count = m_network->get_city_count();
         road_count = m_network->get_road_count();
     }
 
-    if (m_status_info) {
+    if (m_status_info)
+    {
         m_status_info->setText(
             QString("城市: %1  |  道路: %2  |  类型: 无向图")
-                .arg(city_count).arg(road_count));
+                .arg(city_count)
+                .arg(road_count));
     }
 }

@@ -9,9 +9,9 @@
 ## 启动方式
 
 ```bash
-program.exe                        # 菜单模式（默认）
-program.exe --cli                  # CLI 交互模式
-program.exe <命令> <参数...>        # 单条命令批处理
+network_console.exe                        # 菜单模式（默认）
+network_console.exe --cli                  # CLI 交互模式
+network_console.exe <命令> <参数...>        # 单条命令批处理
 ```
 
 ---
@@ -65,14 +65,14 @@ program.exe <命令> <参数...>        # 单条命令批处理
 
 ### 七、性能对比 & 文件管理 & 系统
 
-| 命令        | 参数           | 说明                       | 示例                               |
-| ----------- | -------------- | -------------------------- | ---------------------------------- |
-| `compare` | —             | 邻接矩阵 vs 邻接表性能对比 | `compare`                        |
-| `save`    | `[filepath]` | 保存路网（默认路径）       | `save` / `save ../data/my.txt` |
-| `load`    | `[filepath]` | 加载路网（默认路径）       | `load` / `load ../data/my.txt` |
-| `help`    | —             | 显示命令帮助               | `help`                           |
-| `menu`    | —             | 切回菜单模式（仅交互模式） | `menu`                           |
-| `exit`    | —             | 退出程序                   | `exit`                           |
+| 命令        | 参数           | 说明                       | 示例                              |
+| ----------- | -------------- | -------------------------- | --------------------------------- |
+| `compare` | —             | 邻接矩阵 vs 邻接表性能对比 | `compare`                       |
+| `save`    | `[filepath]` | 保存路网（默认路径）       | `save` / `save ./data/my.txt` |
+| `load`    | `[filepath]` | 加载路网（默认路径）       | `load` / `load ./data/my.txt` |
+| `help`    | —             | 显示命令帮助               | `help`                          |
+| `menu`    | —             | 切回菜单模式（仅交互模式） | `menu`                          |
+| `exit`    | —             | 退出程序                   | `exit`                          |
 
 ---
 

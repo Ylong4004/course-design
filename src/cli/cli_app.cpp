@@ -42,7 +42,7 @@ static void cli_init_services(RoadNetwork **out_network,
     if (FileManager::data_file_exists()) {
         FileManager::auto_load(list_graph);
         FileManager::auto_load(matrix_graph);
-        CommandParser::set_current_file("../data/default.txt");
+        CommandParser::set_current_file("./data/default.txt");
     }
 }
 

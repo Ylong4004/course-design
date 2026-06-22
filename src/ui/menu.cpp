@@ -33,22 +33,26 @@
 static std::vector<std::string> list_network_files()
 {
     std::vector<std::string> files;
-    std::system("dir /b ..\\data\\*.txt > ..\\data\\_list.tmp 2>nul");
-    std::ifstream infile("../data/_list.tmp");
-    if (!infile.is_open()) {
+    std::system("dir /b .\\data\\*.txt > .\\data\\_list.tmp 2>nul");
+    std::ifstream infile("./data/_list.tmp");
+    if (!infile.is_open())
+    {
         return files;
     }
     std::string name;
-    while (std::getline(infile, name)) {
-        while (!name.empty() && (name.back() == '\r')) {
+    while (std::getline(infile, name))
+    {
+        while (!name.empty() && (name.back() == '\r'))
+        {
             name.pop_back();
         }
-        if (!name.empty()) {
-            files.push_back("../data/" + name);
+        if (!name.empty())
+        {
+            files.push_back("./data/" + name);
         }
     }
     infile.close();
-    std::remove("../data/_list.tmp");
+    std::remove("./data/_list.tmp");
     return files;
 }
 
@@ -67,18 +71,21 @@ static void print_return_hint()
  */
 static int clear_graph(GraphBase *graph)
 {
-    if (graph == nullptr) {
+    if (graph == nullptr)
+    {
         return ERR_INVALID_INPUT;
     }
 
     int *vertex_ids = nullptr;
     int vertex_count = 0;
     int ret = graph->get_all_vertex_ids(&vertex_ids, &vertex_count);
-    if (ret != SUCCESS) {
+    if (ret != SUCCESS)
+    {
         return ret;
     }
 
-    for (int i = 0; i < vertex_count; ++i) {
+    for (int i = 0; i < vertex_count; ++i)
+    {
         graph->remove_vertex(vertex_ids[i]);
     }
 
@@ -93,15 +100,15 @@ MenuSystem::MenuSystem()
     : network(nullptr),
       simulator(nullptr),
       comparator(nullptr),
-            is_running(false),
-            congestion_active(false),
-            congestion_from(INVALID_ID),
-            congestion_to(INVALID_ID),
-            congestion_original_weight(INF_WEIGHT),
-            congestion_congested_weight(INF_WEIGHT),
-            switch_to_cli(false)
+      is_running(false),
+      congestion_active(false),
+      congestion_from(INVALID_ID),
+      congestion_to(INVALID_ID),
+      congestion_original_weight(INF_WEIGHT),
+      congestion_congested_weight(INF_WEIGHT),
+      switch_to_cli(false)
 {
-    std::strcpy(current_file_path, "../data/default.txt");
+    std::strcpy(current_file_path, "./data/default.txt");
 }
 
 /**
@@ -109,11 +116,11 @@ MenuSystem::MenuSystem()
  */
 MenuSystem::~MenuSystem()
 {
-        reset_congestion_state();
+    reset_congestion_state();
 
-        safe_delete(comparator);
-        safe_delete(simulator);
-        safe_delete(network);
+    safe_delete(comparator);
+    safe_delete(simulator);
+    safe_delete(network);
 }
 
 /**
@@ -125,7 +132,8 @@ void MenuSystem::run()
     init_network();
     load_default_data();
 
-    while (is_running) {
+    while (is_running)
+    {
         show_main_menu();
         const int choice = get_menu_choice(0, 10);
         dispatch_choice(choice);
@@ -162,12 +170,15 @@ int MenuSystem::get_menu_choice(int min, int max) const
 
 void MenuSystem::dispatch_choice(int choice)
 {
-    switch (choice) {
+    switch (choice)
+    {
     case 0:
-        if (Validator::read_confirm("确认退出系统？(Y/N): ")) {
+        if (Validator::read_confirm("确认退出系统？(Y/N): "))
+        {
             /* 退出前自动保存到当前路网文件 */
-            GraphBase* g = network->get_graph(STORAGE_MATRIX);
-            if (g != nullptr && g->get_vertex_count() > 0) {
+            GraphBase *g = network->get_graph(STORAGE_MATRIX);
+            if (g != nullptr && g->get_vertex_count() > 0)
+            {
                 FileManager::save_to_file(g, current_file_path);
                 Formatter::print_info("路网已自动保存。");
             }
@@ -203,7 +214,8 @@ void MenuSystem::dispatch_choice(int choice)
         menu_help();
         break;
     case 10:
-        if (Validator::read_confirm("确认切换到命令行模式？(Y/N): ")) {
+        if (Validator::read_confirm("确认切换到命令行模式？(Y/N): "))
+        {
             switch_to_cli = true;
             is_running = false;
             Formatter::print_info("正在切换到命令行模式...");
@@ -217,13 +229,15 @@ void MenuSystem::dispatch_choice(int choice)
 
 void MenuSystem::menu_network_edit()
 {
-    if (network == nullptr) {
+    if (network == nullptr)
+    {
         Formatter::print_error("路网尚未初始化。");
         Formatter::pause();
         return;
     }
 
-    while (true) {
+    while (true)
+    {
         Formatter::print_sub_title("路网编辑");
         std::cout << " 1. 新增城市" << std::endl;
         std::cout << " 2. 删除城市" << std::endl;
@@ -235,104 +249,153 @@ void MenuSystem::menu_network_edit()
         print_return_hint();
 
         const int choice = get_menu_choice(0, 7);
-        if (choice == 0) {
+        if (choice == 0)
+        {
             return;
         }
 
-        if (choice == 1) {
+        if (choice == 1)
+        {
             const int city_id = Validator::read_int_safe("城市编号: ", 1, MAX_CITY_COUNT);
             std::string city_name;
             Validator::read_str_safe("城市名称: ", city_name, MAX_CITY_NAME - 1);
             if (!Validator::validate_city_id(city_id) ||
-                !Validator::is_valid_city_name(city_name)) {
+                !Validator::is_valid_city_name(city_name))
+            {
                 Formatter::pause();
                 continue;
             }
 
             reset_congestion_state();
             const int ret = network->add_city(city_id, city_name.c_str());
-            if (ret == SUCCESS) {
+            if (ret == SUCCESS)
+            {
                 Formatter::print_success("城市添加成功。");
-            } else if (ret == ERR_CITY_DUPLICATE) {
+            }
+            else if (ret == ERR_CITY_DUPLICATE)
+            {
                 Formatter::print_error("城市编号已存在，请更换编号。");
-            } else if (ret == ERR_GRAPH_FULL) {
+            }
+            else if (ret == ERR_GRAPH_FULL)
+            {
                 Formatter::print_error("城市数量已达上限，无法添加。");
-            } else {
+            }
+            else
+            {
                 std::cerr << "[错误] 城市添加失败（错误码: " << ret << "）。" << std::endl;
             }
-        } else if (choice == 2) {
+        }
+        else if (choice == 2)
+        {
             const int city_id = Validator::read_int_safe("要删除的城市编号: ", 1, MAX_CITY_COUNT);
             reset_congestion_state();
             const int ret = network->remove_city(city_id);
-            if (ret == SUCCESS) {
+            if (ret == SUCCESS)
+            {
                 Formatter::print_success("城市删除成功。");
-            } else if (ret == ERR_CITY_NOT_FOUND) {
+            }
+            else if (ret == ERR_CITY_NOT_FOUND)
+            {
                 Formatter::print_error("城市编号不存在，无法删除。");
-            } else {
+            }
+            else
+            {
                 std::cerr << "[错误] 城市删除失败（错误码: " << ret << "）。" << std::endl;
             }
-        } else if (choice == 3) {
+        }
+        else if (choice == 3)
+        {
             const int from = Validator::read_int_safe("起点城市编号: ", 1, MAX_CITY_COUNT);
             const int to = Validator::read_int_safe("终点城市编号: ", 1, MAX_CITY_COUNT);
             const int weight = Validator::read_int_safe("道路权值: ", 1, INF_WEIGHT - 1);
             if (!Validator::validate_no_self_loop(from, to) ||
-                !Validator::validate_weight(weight)) {
+                !Validator::validate_weight(weight))
+            {
                 Formatter::pause();
                 continue;
             }
 
             reset_congestion_state();
             const int ret = network->add_road(from, to, weight);
-            if (ret == SUCCESS) {
+            if (ret == SUCCESS)
+            {
                 Formatter::print_success("道路添加成功。");
-            } else if (ret == ERR_CITY_NOT_FOUND) {
+            }
+            else if (ret == ERR_CITY_NOT_FOUND)
+            {
                 Formatter::print_error("起点或终点城市不存在。");
-            } else if (ret == ERR_ROAD_EXISTS) {
+            }
+            else if (ret == ERR_ROAD_EXISTS)
+            {
                 Formatter::print_error("该道路已存在，请删除后重新添加。");
-            } else if (ret == ERR_SELF_LOOP) {
+            }
+            else if (ret == ERR_SELF_LOOP)
+            {
                 Formatter::print_error("不能添加自环道路（起终点相同）。");
-            } else {
+            }
+            else
+            {
                 std::cerr << "[错误] 道路添加失败（错误码: " << ret << "）。" << std::endl;
             }
-        } else if (choice == 4) {
+        }
+        else if (choice == 4)
+        {
             const int from = Validator::read_int_safe("起点城市编号: ", 1, MAX_CITY_COUNT);
             const int to = Validator::read_int_safe("终点城市编号: ", 1, MAX_CITY_COUNT);
-            if (!Validator::validate_no_self_loop(from, to)) {
+            if (!Validator::validate_no_self_loop(from, to))
+            {
                 Formatter::pause();
                 continue;
             }
 
             reset_congestion_state();
             const int ret = network->remove_road(from, to);
-            if (ret == SUCCESS) {
+            if (ret == SUCCESS)
+            {
                 Formatter::print_success("道路删除成功。");
-            } else if (ret == ERR_ROAD_NOT_FOUND) {
+            }
+            else if (ret == ERR_ROAD_NOT_FOUND)
+            {
                 Formatter::print_error("该道路不存在，无法删除。");
-            } else {
+            }
+            else
+            {
                 std::cerr << "[错误] 道路删除失败（错误码: " << ret << "）。" << std::endl;
             }
-        } else if (choice == 5) {
+        }
+        else if (choice == 5)
+        {
             const int from = Validator::read_int_safe("起点城市编号: ", 1, MAX_CITY_COUNT);
             const int to = Validator::read_int_safe("终点城市编号: ", 1, MAX_CITY_COUNT);
             const int weight = Validator::read_int_safe("新的道路权值: ", 1, INF_WEIGHT - 1);
             if (!Validator::validate_no_self_loop(from, to) ||
-                !Validator::validate_weight(weight)) {
+                !Validator::validate_weight(weight))
+            {
                 Formatter::pause();
                 continue;
             }
 
             reset_congestion_state();
             const int ret = network->update_road_weight(from, to, weight);
-            if (ret == SUCCESS) {
+            if (ret == SUCCESS)
+            {
                 Formatter::print_success("道路权值修改成功。");
-            } else if (ret == ERR_ROAD_NOT_FOUND) {
+            }
+            else if (ret == ERR_ROAD_NOT_FOUND)
+            {
                 Formatter::print_error("该道路不存在，无法修改权值。");
-            } else {
+            }
+            else
+            {
                 std::cerr << "[错误] 道路权值修改失败（错误码: " << ret << "）。" << std::endl;
             }
-        } else if (choice == 6) {
+        }
+        else if (choice == 6)
+        {
             network->print_network_overview();
-        } else if (choice == 7) {
+        }
+        else if (choice == 7)
+        {
             network->print_network_detail();
         }
         Formatter::pause();
@@ -341,25 +404,30 @@ void MenuSystem::menu_network_edit()
 
 void MenuSystem::menu_traversal()
 {
-    while (true) {
+    while (true)
+    {
         Formatter::print_sub_title("图遍历");
         std::cout << " 1. DFS 深度优先遍历" << std::endl;
         std::cout << " 2. BFS 广度优先遍历" << std::endl;
         print_return_hint();
 
         const int choice = get_menu_choice(0, 2);
-        if (choice == 0) {
+        if (choice == 0)
+        {
             return;
         }
 
-        GraphBase* graph = network->get_graph(STORAGE_MATRIX);
+        GraphBase *graph = network->get_graph(STORAGE_MATRIX);
         int start = Validator::read_int_safe("遍历起点城市编号: ", 1, MAX_CITY_COUNT);
-        int* seq = nullptr;
+        int *seq = nullptr;
         int len = 0;
-        if (choice == 1) {
+        if (choice == 1)
+        {
             traverse_dfs(graph, start, &seq, &len);
             print_traversal_sequence(graph, seq, len, "DFS");
-        } else {
+        }
+        else
+        {
             traverse_bfs(graph, start, &seq, &len);
             print_traversal_sequence(graph, seq, len, "BFS");
         }
@@ -370,34 +438,40 @@ void MenuSystem::menu_traversal()
 
 void MenuSystem::menu_shortest_path()
 {
-    while (true) {
+    while (true)
+    {
         Formatter::print_sub_title("最短路径");
         std::cout << " 1. Dijkstra 单源最短路径" << std::endl;
         std::cout << " 2. Floyd 多源最短路径" << std::endl;
         print_return_hint();
 
         const int choice = get_menu_choice(0, 2);
-        if (choice == 0) {
+        if (choice == 0)
+        {
             return;
         }
 
-        GraphBase* graph = network->get_graph(STORAGE_MATRIX);
-        if (choice == 1) {
+        GraphBase *graph = network->get_graph(STORAGE_MATRIX);
+        if (choice == 1)
+        {
             int start = Validator::read_int_safe("起点城市编号: ", 1, MAX_CITY_COUNT);
             int vc = graph->get_vertex_count();
-            int* dist = new int[vc];
-            int* prev = new int[vc];
+            int *dist = new int[vc];
+            int *prev = new int[vc];
             run_dijkstra(graph, start, dist, prev);
             print_dijkstra_result(graph, start, dist, prev);
             delete[] dist;
             delete[] prev;
-        } else {
+        }
+        else
+        {
             int vc = 0;
-            int** dist = nullptr;
-            int** next = nullptr;
+            int **dist = nullptr;
+            int **next = nullptr;
             run_floyd(graph, &dist, &next, &vc);
             print_floyd_table(graph, dist, next, vc);
-            for (int i = 0; i < vc; ++i) {
+            for (int i = 0; i < vc; ++i)
+            {
                 delete[] dist[i];
                 delete[] next[i];
             }
@@ -410,23 +484,28 @@ void MenuSystem::menu_shortest_path()
 
 void MenuSystem::menu_spanning_tree()
 {
-    while (true) {
+    while (true)
+    {
         Formatter::print_sub_title("最小生成树");
         std::cout << " 1. Prim 算法" << std::endl;
         std::cout << " 2. Kruskal 算法" << std::endl;
         print_return_hint();
 
         const int choice = get_menu_choice(0, 2);
-        if (choice == 0) {
+        if (choice == 0)
+        {
             return;
         }
 
-        GraphBase* graph = network->get_graph(STORAGE_MATRIX);
+        GraphBase *graph = network->get_graph(STORAGE_MATRIX);
         MSTResult_t mst;
-        if (choice == 1) {
+        if (choice == 1)
+        {
             build_mst_prim(graph, &mst);
             print_mst_result("Prim", &mst);
-        } else {
+        }
+        else
+        {
             build_mst_kruskal(graph, &mst);
             print_mst_result("Kruskal", &mst);
         }
@@ -438,9 +517,10 @@ void MenuSystem::menu_spanning_tree()
 void MenuSystem::menu_topological_sort()
 {
     Formatter::print_sub_title("拓扑排序");
-    GraphBase* graph = network->get_graph(STORAGE_MATRIX);
+    GraphBase *graph = network->get_graph(STORAGE_MATRIX);
 
-    if (graph->get_graph_type() != GRAPH_DIRECTED) {
+    if (graph->get_graph_type() != GRAPH_DIRECTED)
+    {
         Formatter::print_error("拓扑排序仅适用于有向图，"
                                "当前路网为无向图，无法执行此操作。");
         Formatter::print_info("提示：请在路网编辑中构建有向图后重试。");
@@ -448,11 +528,12 @@ void MenuSystem::menu_topological_sort()
         return;
     }
 
-    int* seq = nullptr;
+    int *seq = nullptr;
     int len = 0;
     bool has_cycle = false;
     int ret = run_topological_sort(graph, &seq, &len, &has_cycle);
-    if (ret != SUCCESS) {
+    if (ret != SUCCESS)
+    {
         Formatter::print_error("拓扑排序执行失败。");
         delete[] seq;
         Formatter::pause();
@@ -465,13 +546,15 @@ void MenuSystem::menu_topological_sort()
 
 void MenuSystem::menu_congestion()
 {
-    if (network == nullptr || simulator == nullptr) {
+    if (network == nullptr || simulator == nullptr)
+    {
         Formatter::print_error("拥堵模拟器尚未初始化。");
         Formatter::pause();
         return;
     }
 
-    while (true) {
+    while (true)
+    {
         Formatter::print_sub_title("拥堵模拟");
         std::cout << " 1. 修改道路权值" << std::endl;
         std::cout << " 2. 恢复全部修改" << std::endl;
@@ -480,46 +563,54 @@ void MenuSystem::menu_congestion()
         print_return_hint();
 
         const int choice = get_menu_choice(0, 4);
-        if (choice == 0) {
+        if (choice == 0)
+        {
             return;
         }
 
-        if (choice == 1) {
+        if (choice == 1)
+        {
             const int from = Validator::read_int_safe("起点城市编号: ", 1, MAX_CITY_COUNT);
             const int to = Validator::read_int_safe("终点城市编号: ", 1, MAX_CITY_COUNT);
             const int weight = Validator::read_int_safe("拥堵后的道路权值: ", 1, INF_WEIGHT - 1);
             if (!Validator::validate_no_self_loop(from, to) ||
-                !Validator::validate_weight(weight)) {
+                !Validator::validate_weight(weight))
+            {
                 Formatter::pause();
                 continue;
             }
 
-            if (congestion_active) {
+            if (congestion_active)
+            {
                 reset_congestion_state();
             }
 
             int original_weight = 0;
             GraphBase *matrix_graph = network->get_graph(STORAGE_MATRIX);
             GraphBase *list_graph = network->get_graph(STORAGE_LIST);
-            if (matrix_graph == nullptr || list_graph == nullptr) {
+            if (matrix_graph == nullptr || list_graph == nullptr)
+            {
                 Formatter::print_error("底层图结构不可用。");
                 Formatter::pause();
                 continue;
             }
 
-            if (matrix_graph->get_edge_weight(from, to, &original_weight) != SUCCESS) {
+            if (matrix_graph->get_edge_weight(from, to, &original_weight) != SUCCESS)
+            {
                 Formatter::print_error("指定道路不存在，无法设置拥堵。");
                 Formatter::pause();
                 continue;
             }
 
-            if (simulator->set_congestion(from, to, weight) != SUCCESS) {
+            if (simulator->set_congestion(from, to, weight) != SUCCESS)
+            {
                 Formatter::print_error("设置拥堵失败。");
                 Formatter::pause();
                 continue;
             }
 
-            if (list_graph->update_edge_weight(from, to, weight) != SUCCESS) {
+            if (list_graph->update_edge_weight(from, to, weight) != SUCCESS)
+            {
                 simulator->restore_all();
                 Formatter::print_error("同步邻接表失败，已回滚。");
                 Formatter::pause();
@@ -532,20 +623,29 @@ void MenuSystem::menu_congestion()
             congestion_original_weight = original_weight;
             congestion_congested_weight = weight;
             Formatter::print_success("拥堵权值修改成功。");
-        } else if (choice == 4) {
+        }
+        else if (choice == 4)
+        {
             const int start_city = Validator::read_int_safe("分析起点城市编号: ", 1, MAX_CITY_COUNT);
             simulator->print_comparison_report(start_city);
-        } else if (choice == 2) {
+        }
+        else if (choice == 2)
+        {
             reset_congestion_state();
             Formatter::print_success("已恢复全部拥堵修改。");
-        } else if (choice == 3) {
-            if (congestion_active) {
+        }
+        else if (choice == 3)
+        {
+            if (congestion_active)
+            {
                 std::cout << "当前拥堵道路: " << congestion_from
                           << " -> " << congestion_to
                           << "，原始权值 " << congestion_original_weight
                           << "，拥堵后权值 " << congestion_congested_weight
                           << std::endl;
-            } else {
+            }
+            else
+            {
                 std::cout << "当前没有拥堵修改记录。" << std::endl;
             }
         }
@@ -555,7 +655,8 @@ void MenuSystem::menu_congestion()
 
 void MenuSystem::menu_comparator()
 {
-    if (comparator == nullptr) {
+    if (comparator == nullptr)
+    {
         Formatter::print_error("性能对比器尚未初始化。");
         Formatter::pause();
         return;
@@ -568,13 +669,15 @@ void MenuSystem::menu_comparator()
 
 void MenuSystem::menu_file_manage()
 {
-    if (network == nullptr) {
+    if (network == nullptr)
+    {
         Formatter::print_error("路网尚未初始化。");
         Formatter::pause();
         return;
     }
 
-    while (true) {
+    while (true)
+    {
         Formatter::print_sub_title("数据文件管理");
         std::cout << " 1. 保存路网到文件" << std::endl;
         std::cout << " 2. 从文件加载路网" << std::endl;
@@ -583,43 +686,52 @@ void MenuSystem::menu_file_manage()
         print_return_hint();
 
         const int choice = get_menu_choice(0, 4);
-        if (choice == 0) {
+        if (choice == 0)
+        {
             return;
         }
 
         GraphBase *matrix_graph = network->get_graph(STORAGE_MATRIX);
         GraphBase *list_graph = network->get_graph(STORAGE_LIST);
 
-        if (choice == 3) {
+        if (choice == 3)
+        {
             /* 切换路网：列出 data/ 下所有 .txt 文件 */
             std::vector<std::string> files = list_network_files();
-            if (files.empty()) {
+            if (files.empty())
+            {
                 Formatter::print_warning("data/ 目录下没有找到路网文件。");
                 Formatter::pause();
                 continue;
             }
             Formatter::print_sub_title("可用路网文件");
-            for (size_t i = 0; i < files.size(); ++i) {
+            for (size_t i = 0; i < files.size(); ++i)
+            {
                 std::cout << " " << (i + 1) << ". " << files[i] << std::endl;
             }
             std::cout << " 0. 取消" << std::endl;
             int fchoice = get_menu_choice(0, (int)files.size());
-            if (fchoice == 0) {
+            if (fchoice == 0)
+            {
                 Formatter::pause();
                 continue;
             }
-            const char* fpath = files[fchoice - 1].c_str();
+            const char *fpath = files[fchoice - 1].c_str();
             reset_congestion_state();
             clear_graph(matrix_graph);
             clear_graph(list_graph);
             int ret = FileManager::load_from_file(matrix_graph, fpath);
-            if (ret == SUCCESS) {
+            if (ret == SUCCESS)
+            {
                 ret = FileManager::load_from_file(list_graph, fpath);
             }
-            if (ret == SUCCESS) {
+            if (ret == SUCCESS)
+            {
                 std::strcpy(current_file_path, fpath);
                 Formatter::print_success(("已切换至: " + files[fchoice - 1]).c_str());
-            } else {
+            }
+            else
+            {
                 Formatter::print_error("路网加载失败，请检查文件格式。");
             }
             Formatter::pause();
@@ -628,41 +740,57 @@ void MenuSystem::menu_file_manage()
 
         std::string filename;
         std::string fullpath;
-        if (choice == 1 || choice == 2) {
+        if (choice == 1 || choice == 2)
+        {
             Validator::read_str_safe("文件名（仅 .txt 后缀，保存在 data/ 目录）: ", filename, 255);
             if (filename.empty() || filename.size() < 5 ||
-                filename.compare(filename.size() - 4, 4, ".txt") != 0) {
+                filename.compare(filename.size() - 4, 4, ".txt") != 0)
+            {
                 filename += ".txt";
             }
-            fullpath = "../data/" + filename;
-        } else if (choice == 4) {
+            fullpath = "./data/" + filename;
+        }
+        else if (choice == 4)
+        {
             Validator::read_str_safe("默认文件路径: ", filename, 255);
             fullpath = filename;
         }
 
-        if (choice == 1) {
+        if (choice == 1)
+        {
             const int ret = FileManager::save_to_file(matrix_graph, fullpath.c_str());
-            if (ret == SUCCESS) {
+            if (ret == SUCCESS)
+            {
                 std::strcpy(current_file_path, fullpath.c_str());
                 Formatter::print_success(("路网已保存到 " + fullpath).c_str());
-            } else {
+            }
+            else
+            {
                 Formatter::print_error("保存文件失败。");
             }
-        } else if (choice == 2) {
+        }
+        else if (choice == 2)
+        {
             reset_congestion_state();
             clear_graph(matrix_graph);
             clear_graph(list_graph);
             int ret = FileManager::load_from_file(matrix_graph, fullpath.c_str());
-            if (ret == SUCCESS) {
+            if (ret == SUCCESS)
+            {
                 ret = FileManager::load_from_file(list_graph, fullpath.c_str());
             }
-            if (ret == SUCCESS) {
+            if (ret == SUCCESS)
+            {
                 std::strcpy(current_file_path, fullpath.c_str());
                 Formatter::print_success(("路网已从文件加载: " + fullpath).c_str());
-            } else {
+            }
+            else
+            {
                 Formatter::print_error("加载文件失败。");
             }
-        } else if (choice == 4) {
+        }
+        else if (choice == 4)
+        {
             FileManager::set_default_path(fullpath.c_str());
             Formatter::print_success("默认文件路径已更新。");
         }
@@ -693,12 +821,13 @@ void MenuSystem::init_network()
 
     network = new RoadNetwork(MAX_CITY_COUNT, GRAPH_UNDIRECTED);
     simulator = new CongestionSimulator(network->get_graph(STORAGE_MATRIX), MAX_CITY_COUNT);
-    comparator = new StructureComparator(network->get_graph(STORAGE_MATRIX),network->get_graph(STORAGE_LIST));
+    comparator = new StructureComparator(network->get_graph(STORAGE_MATRIX), network->get_graph(STORAGE_LIST));
 }
 
 void MenuSystem::load_default_data()
 {
-    if (network == nullptr) {
+    if (network == nullptr)
+    {
         Formatter::print_error("路网初始化失败。");
         return;
     }
@@ -707,17 +836,20 @@ void MenuSystem::load_default_data()
 
     GraphBase *matrix_graph = network->get_graph(STORAGE_MATRIX);
     GraphBase *list_graph = network->get_graph(STORAGE_LIST);
-    if (matrix_graph == nullptr || list_graph == nullptr) {
+    if (matrix_graph == nullptr || list_graph == nullptr)
+    {
         Formatter::print_error("底层图结构不可用。");
         return;
     }
 
     /* 优先加载 data/default.txt */
-    const char* default_file = "../data/default.txt";
+    const char *default_file = "./data/default.txt";
     int ret = FileManager::load_from_file(matrix_graph, default_file);
-    if (ret == SUCCESS) {
+    if (ret == SUCCESS)
+    {
         ret = FileManager::load_from_file(list_graph, default_file);
-        if (ret == SUCCESS) {
+        if (ret == SUCCESS)
+        {
             std::strcpy(current_file_path, default_file);
             Formatter::print_success("已加载默认路网数据（data/default.txt）。");
             return;
@@ -726,15 +858,19 @@ void MenuSystem::load_default_data()
 
     /* default.txt 不存在或加载失败，尝试 data/ 下第一个 .txt */
     std::vector<std::string> files = list_network_files();
-    for (const auto& f : files) {
-        if (f.find("default.txt") != std::string::npos) continue;
+    for (const auto &f : files)
+    {
+        if (f.find("default.txt") != std::string::npos)
+            continue;
         clear_graph(matrix_graph);
         clear_graph(list_graph);
         ret = FileManager::load_from_file(matrix_graph, f.c_str());
-        if (ret == SUCCESS) {
+        if (ret == SUCCESS)
+        {
             ret = FileManager::load_from_file(list_graph, f.c_str());
         }
-        if (ret == SUCCESS) {
+        if (ret == SUCCESS)
+        {
             std::strcpy(current_file_path, f.c_str());
             Formatter::print_success(("已加载路网文件: " + f).c_str());
             return;
@@ -746,7 +882,8 @@ void MenuSystem::load_default_data()
 
 void MenuSystem::reset_congestion_state()
 {
-    if (!congestion_active || network == nullptr || simulator == nullptr) {
+    if (!congestion_active || network == nullptr || simulator == nullptr)
+    {
         congestion_active = false;
         congestion_from = INVALID_ID;
         congestion_to = INVALID_ID;
@@ -757,11 +894,13 @@ void MenuSystem::reset_congestion_state()
 
     GraphBase *matrix_graph = network->get_graph(STORAGE_MATRIX);
     GraphBase *list_graph = network->get_graph(STORAGE_LIST);
-    if (matrix_graph != nullptr) {
+    if (matrix_graph != nullptr)
+    {
         matrix_graph->update_edge_weight(congestion_from, congestion_to, congestion_original_weight);
     }
 
-    if (list_graph != nullptr) {
+    if (list_graph != nullptr)
+    {
         list_graph->update_edge_weight(congestion_from, congestion_to, congestion_original_weight);
     }
 

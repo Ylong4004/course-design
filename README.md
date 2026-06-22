@@ -38,7 +38,8 @@ course-design/
 │   ├── ui/            3 个模块：菜单/格式化/校验
 │   ├── cli/           2 个模块：命令行交互
 │   ├── qt/            7 个模块：Qt GUI 界面（可选）
-│   └── test/          test_cases.* (23 个测试用例)
+│   ├── test/          test_cases.* (23 个测试用例)
+│   └── output/        g++ 编译产物（已迁移到 bin/）
 ├── build/                           # CMake 编译产物（git 忽略）
 │   └── bin/           traffic_network.exe / traffic_console.exe
 ├── data/                            # 路网数据文件（.txt）
@@ -195,7 +196,6 @@ course-design/
 
 ## 快速开始
 
-
 ### CMake 构建（支持 Qt GUI，可选）
 
 GUI 版本需要 MSYS2（约 200MB，无需 8GB 的 Qt 在线安装器）。
@@ -238,10 +238,11 @@ C:\msys64\usr\bin\bash.exe -lc "pacman -S --noconfirm mingw-w64-ucrt-x86_64-qt6-
 ---
 
 ### 直接运行控制台
-#### 编译
+
+#### 从项目根目录直接编译
+
 ```bash
-cd ./src
-g++ -std=c++11 -Wall -g3 main.cpp graph/adj_matrix.cpp graph/adj_list.cpp algorithms/queue.cpp algorithms/stack.cpp algorithms/union_find.cpp algorithms/priority_queue.cpp algorithms/traversal.cpp algorithms/shortest_path.cpp algorithms/spanning_tree.cpp algorithms/topological.cpp services/road_network.cpp services/congestion.cpp services/comparator.cpp services/file_io.cpp ui/menu.cpp ui/formatter.cpp ui/validator.cpp test/test_cases.cpp cli/cli_app.cpp cli/command_parser.cpp -o output/main.exe
+g++ -std=c++11 -Wall -g3 src/main.cpp src/graph/adj_matrix.cpp src/graph/adj_list.cpp src/algorithms/queue.cpp src/algorithms/stack.cpp src/algorithms/union_find.cpp src/algorithms/priority_queue.cpp src/algorithms/traversal.cpp src/algorithms/shortest_path.cpp src/algorithms/spanning_tree.cpp src/algorithms/topological.cpp src/services/road_network.cpp src/services/congestion.cpp src/services/comparator.cpp src/services/file_io.cpp src/ui/menu.cpp src/ui/formatter.cpp src/ui/validator.cpp src/test/test_cases.cpp src/cli/cli_app.cpp src/cli/command_parser.cpp -o bin/network_console.exe
 ```
 
 > VSCode 中按 `Ctrl+Shift+B` → 选"编译全部（21个cpp）"即可。
@@ -249,16 +250,14 @@ g++ -std=c++11 -Wall -g3 main.cpp graph/adj_matrix.cpp graph/adj_list.cpp algori
 #### 运行
 
 ```bash
-cd ./src
-
 # 菜单模式（无参数，默认）
-./output/main.exe
+bin/network_console.exe
 
 # 命令行交互模式
-./output/main.exe --cli
+bin/network_console.exe --cli
 
 # 单条命令批处理
-./output/main.exe dijkstra 1 5
+bin/network_console.exe dijkstra 1 5
 ```
 
 ### 运行测试
