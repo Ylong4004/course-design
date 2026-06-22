@@ -1,6 +1,6 @@
 # 城市交通路网分析系统
 
-> **数据结构课程设计** | 三人协作 | 控制台 + Qt GUI
+> **数据结构课程设计** 控制台 + Qt GUI
 >
 > 开发环境： VSCode | 语言：C/C++ | 构建：CMake + MinGW | 版本管理：Git
 
@@ -22,12 +22,14 @@
 
 ```
 course-design/
-├── docs/
+├── docs/                            # 文档目录
 │   ├── design_topic.md              # 选题说明
-│   ├── general_requipment.md        # 总体要求（12章）
+│   ├── general_requipment.md        # 课程设计总体要求
 │   ├── coding_standard.md           # 代码编写规范
-│   ├── flowcharts.md                # 流程图集（5张 PRG 图）
-│   └── todo.md                      # 开发任务清单
+│   ├── CHANGELOG.md                 # 更新日志
+│   ├── todo.md                      # 开发任务清单
+│   ├── cli_commands.md              # CLI 命令速查手册
+│   └── prg/                         # 流程图目录
 ├── src/                             # 源代码
 │   ├── main.cpp                     # 程序入口（菜单/CLI/Qt/批处理）
 │   ├── common/                      # types.h  defines.h
@@ -36,7 +38,7 @@ course-design/
 │   ├── services/                    # 4 个模块：路网/拥堵/对比/文件
 │   ├── ui/                          # 3 个模块：菜单/格式化/校验
 │   ├── cli/                         # 2 个模块：命令行交互
-│   ├── qt/                          # 7 个模块：Qt GUI 界面（可选）
+│   ├── qt/                          # 7 个模块：Qt GUI 界面（未完成）
 │   └── test/                        # test_cases.* (23 个测试用例)
 ├── bin/                             # 二进制程序文件
 │   └── network_console.exe          # g++编译产物
