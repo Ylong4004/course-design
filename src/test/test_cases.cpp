@@ -15,8 +15,37 @@
 #include "../services/file_io.h"
 #include <iostream>
 #include <cstring>
+#include <cstdio>
+#include <fstream>
+#include <string>
 
 /* ======================== 辅助工具 ======================== */
+
+/**
+ * @brief 根据当前运行目录定位测试数据文件路径。
+ * @param filename 测试文件名
+ * @return 指向项目 data 目录下该文件的路径
+ */
+static std::string make_test_data_path(const char *filename)
+{
+    const char *candidates[] = {
+        "./data",
+        "../data",
+        "../../data"
+    };
+
+    for (std::size_t i = 0; i < sizeof(candidates) / sizeof(candidates[0]); ++i)
+    {
+        std::string probe = std::string(candidates[i]) + "/default.json";
+        std::ifstream in(probe.c_str());
+        if (in.is_open())
+        {
+            return std::string(candidates[i]) + "/" + filename;
+        }
+    }
+
+    return std::string("./data/") + filename;
+}
 
 /** @brief 创建一个含 5 个城市的无向图（三角形+分支） */
 static GraphBase *create_sample_undirected_graph()
@@ -612,9 +641,9 @@ int test_topo_undirected_error()
 int test_save_load_round_trip()
 {
     GraphBase *g = create_sample_undirected_graph();
-    const char *test_path = "./data/test_roundtrip.json";
+    std::string test_path = make_test_data_path("test_roundtrip.json");
 
-    int save_ok = FileManager::save_to_file(g, test_path);
+    int save_ok = FileManager::save_to_file(g, test_path.c_str());
     if (save_ok != SUCCESS)
     {
         std::cerr << "[测试] 保存失败: " << test_path
@@ -624,11 +653,12 @@ int test_save_load_round_trip()
     }
 
     GraphBase *loaded = new AdjMatrix(10, GRAPH_UNDIRECTED);
-    int load_ok = FileManager::load_from_file(loaded, test_path);
+    int load_ok = FileManager::load_from_file(loaded, test_path.c_str());
     if (load_ok != SUCCESS)
     {
         delete g;
         delete loaded;
+        std::remove(test_path.c_str());
         return load_ok;
     }
 
@@ -638,7 +668,7 @@ int test_save_load_round_trip()
     delete g;
     delete loaded;
     /* 清理测试文件 */
-    std::remove(test_path);
+    std::remove(test_path.c_str());
     return ok ? SUCCESS : ERR_INVALID_INPUT;
 }
 
@@ -649,7 +679,9 @@ int test_save_load_round_trip()
 int test_load_file_not_found()
 {
     GraphBase *g = new AdjMatrix(10, GRAPH_UNDIRECTED);
-    int result = FileManager::load_from_file(g, "./data/__nonexistent__.json");
+    std::string missing_path = make_test_data_path("__nonexistent__.json");
+    std::remove(missing_path.c_str());
+    int result = FileManager::load_from_file(g, missing_path.c_str());
     delete g;
     return (result == ERR_FILE_OPEN_FAIL) ? SUCCESS : ERR_FILE_OPEN_FAIL;
 }
@@ -661,15 +693,19 @@ int test_load_file_not_found()
 int test_load_bad_format()
 {
     /* 创建一个格式错误的文件 */
-    const char *bad_path = "./data/test_bad.json";
-    std::ofstream out(bad_path);
+    std::string bad_path = make_test_data_path("test_bad.json");
+    std::ofstream out(bad_path.c_str());
+    if (!out.is_open())
+    {
+        return ERR_FILE_OPEN_FAIL;
+    }
     out << "GARBAGE DATA 123\nNOT VALID FORMAT\n";
     out.close();
 
     GraphBase *g = new AdjMatrix(10, GRAPH_UNDIRECTED);
-    int result = FileManager::load_from_file(g, bad_path);
+    int result = FileManager::load_from_file(g, bad_path.c_str());
     delete g;
-    std::remove(bad_path);
+    std::remove(bad_path.c_str());
     return (result == ERR_FILE_FORMAT) ? SUCCESS : ERR_FILE_FORMAT;
 }
 

@@ -22,12 +22,22 @@
 
 char FileManager::default_path[256] = "./data/default.json";
 
+/**
+ * @brief 判断路径中是否包含目录分隔符。
+ * @param path 待检查路径
+ * @return true 包含 '/' 或 '\\'，false 仅为文件名
+ */
 static bool path_has_separator(const std::string &path)
 {
     return path.find('/') != std::string::npos ||
            path.find('\\') != std::string::npos;
 }
 
+/**
+ * @brief 判断路径是否为绝对路径，兼容 Windows 盘符和类 Unix 根路径。
+ * @param path 待检查路径
+ * @return true 为绝对路径，false 为相对路径
+ */
 static bool is_absolute_path(const std::string &path)
 {
     if (path.empty()) {
@@ -41,6 +51,11 @@ static bool is_absolute_path(const std::string &path)
     return path.size() >= 2 && path[1] == ':';
 }
 
+/**
+ * @brief 从路径中提取文件名部分。
+ * @param path 输入路径
+ * @return 去除目录后的文件名
+ */
 static std::string get_basename(const std::string &path)
 {
     std::size_t pos = path.find_last_of("/\\");
@@ -51,18 +66,33 @@ static std::string get_basename(const std::string &path)
     return path.substr(pos + 1);
 }
 
+/**
+ * @brief 判断目录是否存在。
+ * @param path 目录路径
+ * @return true 目录存在，false 不存在或不是目录
+ */
 static bool directory_exists(const std::string &path)
 {
     struct stat info;
     return stat(path.c_str(), &info) == 0 && (info.st_mode & S_IFDIR);
 }
 
+/**
+ * @brief 判断文件是否可以被打开。
+ * @param path 文件路径
+ * @return true 文件存在且可读，false 打开失败
+ */
 static bool file_exists(const std::string &path)
 {
     std::ifstream infile(path.c_str(), std::ios::in);
     return infile.is_open();
 }
 
+/**
+ * @brief 判断目标文件的父目录是否存在。
+ * @param path 文件路径
+ * @return true 父目录存在；若路径不含目录部分也视为 true
+ */
 static bool parent_directory_exists(const std::string &path)
 {
     std::size_t pos = path.find_last_of("/\\");
@@ -73,6 +103,12 @@ static bool parent_directory_exists(const std::string &path)
     return directory_exists(path.substr(0, pos));
 }
 
+/**
+ * @brief 拼接目录和文件名，自动补充分隔符。
+ * @param dir 目录路径
+ * @param name 文件名
+ * @return 拼接后的路径
+ */
 static std::string join_path(const std::string &dir, const std::string &name)
 {
     if (dir.empty()) {
@@ -87,6 +123,11 @@ static std::string join_path(const std::string &dir, const std::string &name)
     return dir + "/" + name;
 }
 
+/**
+ * @brief 判断输入路径是否应按项目 data 目录下的数据文件处理。
+ * @param path 用户传入的文件名或路径
+ * @return true 可尝试映射到 data 目录，false 保持原样
+ */
 static bool looks_like_data_path(const std::string &path)
 {
     std::string normalized = path;
@@ -102,6 +143,10 @@ static bool looks_like_data_path(const std::string &path)
            normalized.find("../data/") != std::string::npos;
 }
 
+/**
+ * @brief 从当前工作目录向上探测项目 data 目录。
+ * @return 找到则返回 data 目录路径，否则返回空字符串
+ */
 static std::string find_data_directory()
 {
     const char *candidates[] = {
@@ -119,6 +164,12 @@ static std::string find_data_directory()
     return "";
 }
 
+/**
+ * @brief 解析读写文件路径，使程序从 bin/build 目录启动时也能定位项目 data 文件。
+ * @param filepath 用户传入路径，空值时使用默认数据文件
+ * @param for_write true 表示写文件路径解析，false 表示读文件路径解析
+ * @return 可用于实际打开文件的路径
+ */
 static std::string resolve_file_path(const char *filepath, bool for_write)
 {
     std::string input = (filepath != nullptr && filepath[0] != '\0')
@@ -175,6 +226,11 @@ static void copy_city_name(char *dest_name, const std::string &source_name)
     dest_name[index] = '\0';
 }
 
+/**
+ * @brief 转义字符串中的 JSON 特殊字符，保证城市名称可安全写入 JSON。
+ * @param text 原始 C 风格字符串
+ * @return JSON 字符串内容中的转义结果（不包含外层引号）
+ */
 static std::string json_escape(const char *text)
 {
     std::string result;
@@ -221,6 +277,11 @@ static std::string json_escape(const char *text)
     return result;
 }
 
+/**
+ * @brief 将 Unicode 码点追加为 UTF-8 字节序列。
+ * @param text 输出字符串
+ * @param codepoint Unicode 码点
+ */
 static void append_utf8(std::string &text, int codepoint)
 {
     if (codepoint < 0) {
@@ -703,6 +764,13 @@ static bool city_exists(const std::vector<City_t> &cities, int city_id)
     return find_city_index(cities, city_id) != -1;
 }
 
+/**
+ * @brief 判断两条边在当前图类型下是否表示同一条道路。
+ * @param left 左侧边
+ * @param right 右侧边
+ * @param graph_type 图类型；无向图会忽略 from/to 顺序
+ * @return true 表示同一条边，false 表示不同边
+ */
 static bool same_edge(const Edge_t &left, const Edge_t &right, GraphType graph_type)
 {
     int left_from = left.from;
@@ -757,10 +825,12 @@ static int clear_graph(GraphBase *graph)
 /* ---- 辅助函数结束 ---- */
 
 /**
- * @brief 将图数据保存到 JSON 文件。
- * @param graph 图存储结构指针
- * @param filepath 目标文件路径，为 nullptr 时使用默认路径
- * @return SUCCESS 成功，ERR_INVALID_INPUT 图为空，ERR_FILE_OPEN_FAIL 文件打开失败
+ * @brief 从 JSON 文件读取并解析路网数据。
+ * @param filepath 源文件路径，为 nullptr 时使用默认路径
+ * @param file_graph_type 输出文件中记录的图类型
+ * @param cities 输出解析得到的城市数组
+ * @param edges 输出解析得到的道路数组
+ * @return SUCCESS 成功，ERR_FILE_OPEN_FAIL 文件打开失败，ERR_FILE_FORMAT 文件格式错误
  */
 static int read_network_json(const char *filepath,
                              int &file_graph_type,

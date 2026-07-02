@@ -29,6 +29,7 @@
 /*  当前路网文件路径追踪                                          */
 /* ============================================================ */
 
+/* 当前 CLI 会话默认读写的路网数据文件路径。 */
 static char g_current_file[256] = "./data/default.json";
 
 const char *CommandParser::get_current_file()
@@ -80,6 +81,13 @@ int CommandParser::to_int(const std::string &s)
     return std::atoi(s.c_str());
 }
 
+/**
+ * @brief 在城市ID数组中查找指定城市ID对应的内部下标。
+ * @param city_ids 城市ID数组
+ * @param city_count 城市数量
+ * @param city_id 要查找的城市ID
+ * @return 找到返回数组下标，否则返回 -1
+ */
 static int find_city_index(const int *city_ids, int city_count, int city_id)
 {
     if (city_ids == nullptr)
@@ -94,6 +102,11 @@ static int find_city_index(const int *city_ids, int city_count, int city_id)
     return -1;
 }
 
+/**
+ * @brief 将 ASCII 字符串转换为小写，用于命令参数的大小写无关匹配。
+ * @param text 输入字符串
+ * @return 小写后的字符串副本
+ */
 static std::string to_lower_ascii(const std::string &text)
 {
     std::string lowered = text;
@@ -105,6 +118,12 @@ static std::string to_lower_ascii(const std::string &text)
     return lowered;
 }
 
+/**
+ * @brief 解析命令行中的图类型参数。
+ * @param arg 图类型参数，可为 0/1、undirected/directed、undir/dir
+ * @param out_type 输出解析后的图类型
+ * @return true 解析成功，false 参数不合法
+ */
 static bool parse_graph_type_arg(const std::string &arg, GraphType *out_type)
 {
     if (out_type == nullptr)
@@ -127,6 +146,12 @@ static bool parse_graph_type_arg(const std::string &arg, GraphType *out_type)
     return false;
 }
 
+/**
+ * @brief 路网结构重置或重新加载后，同步刷新模拟器和性能对比器引用的图对象。
+ * @param network 当前路网管理对象
+ * @param simulator 拥堵模拟器指针，可为空
+ * @param comparator 结构性能对比器指针，可为空
+ */
 static void refresh_runtime_services(RoadNetwork &network,
                                      CongestionSimulator *simulator,
                                      StructureComparator *comparator)
@@ -929,6 +954,11 @@ void CommandParser::cmd_compare(RoadNetwork &network,
 /*  文件IO命令                                                  */
 /* ============================================================ */
 
+/**
+ * @brief 将命令中的文件名解析为 data 目录下的 JSON 路径。
+ * @param input 用户输入的文件名或路径
+ * @return 带路径和 .json 后缀的文件路径
+ */
 static std::string resolve_path(const std::string &input)
 {
     /* 如果已含路径分隔符，直接使用；否则自动加 ./data/ 前缀 */

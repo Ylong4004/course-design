@@ -20,7 +20,7 @@
 
 /* ========================== 错误码 ========================== */
 
-typedef enum
+enum ErrorCode
 {
     SUCCESS = 0,             /* 操作成功 */
     ERR_CITY_NOT_FOUND = -1, /* 城市不存在 */
@@ -36,31 +36,31 @@ typedef enum
     ERR_HAS_CYCLE = -11,     /* 图中存在环路 */
     ERR_DISCONNECTED = -12,  /* 图不连通 */
     ERR_SELF_LOOP = -13,     /* 自环边 */
-} ErrorCode;
+};
 
 /* ========================== 枚举类型 ========================== */
 
 /** @brief 图存储类型 */
-typedef enum
+enum StorageType
 {
     STORAGE_MATRIX = 0, /* 邻接矩阵 */
     STORAGE_LIST = 1,   /* 邻接表 */
-} StorageType;
+};
 
 /** @brief 图的方向类型 */
-typedef enum
+enum GraphType
 {
     GRAPH_UNDIRECTED = 0, /* 无向图 */
     GRAPH_DIRECTED = 1,   /* 有向图 */
-} GraphType;
+};
 
 /** @brief 算法返回值状态 */
-typedef enum
+enum AlgoStatus
 {
     ALGO_SUCCESS = 0,   /* 算法执行成功 */
     ALGO_NO_PATH = 1,   /* 无可达路径 */
     ALGO_NEG_CYCLE = 2, /* 存在负权环 */
-} AlgoStatus;
+};
 
 /* ========================== 结构体定义 ========================== */
 

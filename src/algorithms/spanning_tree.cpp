@@ -11,6 +11,13 @@
 #include <iomanip>
 #include <climits>
 
+/**
+ * @brief 在城市ID数组中查找指定城市ID对应的内部下标。
+ * @param city_ids 城市ID数组
+ * @param city_count 城市数量
+ * @param city_id 要查找的城市ID
+ * @return 找到返回数组下标，否则返回 -1
+ */
 static int find_city_index(const int* city_ids, int city_count, int city_id)
 {
     if (city_ids == nullptr) {

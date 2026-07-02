@@ -12,13 +12,13 @@
 
 /* ========================== 测试用例结构 ========================== */
 
-typedef enum
+enum TestCategory
 {
     TEST_LEGAL = 0,    /* 合法数据测试 */
     TEST_ILLEGAL = 1,  /* 非法数据测试 */
     TEST_BOUNDARY = 2, /* 边界数据测试 */
     TEST_PERF = 3,     /* 性能测试 */
-} TestCategory;
+};
 
 typedef struct
 {
