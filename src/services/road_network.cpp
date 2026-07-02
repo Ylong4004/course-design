@@ -92,6 +92,23 @@ GraphType RoadNetwork::get_type() const
     return graph_type;
 }
 
+int RoadNetwork::reset(GraphType new_type)
+{
+    if (new_type != GRAPH_UNDIRECTED && new_type != GRAPH_DIRECTED)
+    {
+        return ERR_INVALID_INPUT;
+    }
+
+    safe_delete(matrix_graph);
+    safe_delete(list_graph);
+
+    graph_type = new_type;
+    safe_new(matrix_graph, AdjMatrix, max_cities, graph_type);
+    safe_new(list_graph, AdjList, max_cities, graph_type);
+
+    return SUCCESS;
+}
+
 /**
  * @brief 向路网中添加一个城市，同步写入邻接矩阵和邻接表两套存储。
  * @param id 城市编号

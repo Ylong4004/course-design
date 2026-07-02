@@ -612,7 +612,7 @@ int test_topo_undirected_error()
 int test_save_load_round_trip()
 {
     GraphBase *g = create_sample_undirected_graph();
-    const char *test_path = "./data/test_roundtrip.txt";
+    const char *test_path = "./data/test_roundtrip.json";
 
     int save_ok = FileManager::save_to_file(g, test_path);
     if (save_ok != SUCCESS)
@@ -649,7 +649,7 @@ int test_save_load_round_trip()
 int test_load_file_not_found()
 {
     GraphBase *g = new AdjMatrix(10, GRAPH_UNDIRECTED);
-    int result = FileManager::load_from_file(g, "./data/__nonexistent__.txt");
+    int result = FileManager::load_from_file(g, "./data/__nonexistent__.json");
     delete g;
     return (result == ERR_FILE_OPEN_FAIL) ? SUCCESS : ERR_FILE_OPEN_FAIL;
 }
@@ -661,7 +661,7 @@ int test_load_file_not_found()
 int test_load_bad_format()
 {
     /* 创建一个格式错误的文件 */
-    const char *bad_path = "./data/test_bad.txt";
+    const char *bad_path = "./data/test_bad.json";
     std::ofstream out(bad_path);
     out << "GARBAGE DATA 123\nNOT VALID FORMAT\n";
     out.close();

@@ -73,11 +73,11 @@ static bool has_forbidden_path_char(char ch)
 }
 
 /**
- * @brief 检查文件路径是否以 ".txt" 后缀结尾（不区分大小写）。
+ * @brief 检查文件路径是否以 ".json" 后缀结尾（不区分大小写）。
  * @param path 文件路径字符串
- * @return true 是 .txt 文件，false 不是
+ * @return true 是 .json 文件，false 不是
  */
-static bool has_txt_suffix(const std::string &path)
+static bool has_json_suffix(const std::string &path)
 {
     const std::size_t dot_pos = path.find_last_of('.');
     if (dot_pos == std::string::npos || dot_pos + 1 >= path.size()) {
@@ -90,7 +90,7 @@ static bool has_txt_suffix(const std::string &path)
                        return static_cast<char>(std::tolower(ch));
                    });
 
-    return suffix == "txt";
+    return suffix == "json";
 }
 
 /**
@@ -279,14 +279,14 @@ bool Validator::validate_no_self_loop(int from, int to)
 }
 
 /**
- * @brief 校验文件路径是否合法（非空、长度不超限、后缀为 .txt、不含非法字符和末尾反斜杠）。
+ * @brief 校验文件路径是否合法（非空、长度不超限、后缀为 .json、不含非法字符和末尾反斜杠）。
  * @param path 文件路径字符串
  * @return true 合法，false 非法
  */
 bool Validator::is_valid_file_path(const std::string &path)
 {
     const std::string trimmed = trim_copy(path);
-    if (trimmed.empty() || trimmed.size() > 260 || !has_txt_suffix(trimmed)) {
+    if (trimmed.empty() || trimmed.size() > 260 || !has_json_suffix(trimmed)) {
         return false;
     }
 

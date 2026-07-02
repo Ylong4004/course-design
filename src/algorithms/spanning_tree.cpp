@@ -11,6 +11,21 @@
 #include <iomanip>
 #include <climits>
 
+static int find_city_index(const int* city_ids, int city_count, int city_id)
+{
+    if (city_ids == nullptr) {
+        return -1;
+    }
+
+    for (int i = 0; i < city_count; ++i) {
+        if (city_ids[i] == city_id) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 /* ========================== 并查集辅助函数 ========================== */
 
 /**
@@ -83,15 +98,6 @@ int build_mst_prim(const GraphBase* graph, MSTResult_t* out_mst)
     graph->get_all_vertex_ids(&all_ids, &all_count);
     int n = all_count;
 
-    const int max_id = graph->get_max_vertex_count();
-    int* id_to_index = new int[max_id];
-    for (int i = 0; i < max_id; ++i) {
-        id_to_index[i] = -1;
-    }
-    for (int i = 0; i < n; ++i) {
-        id_to_index[all_ids[i]] = i;
-    }
-
     int* key = new int[n];
     int* parent = new int[n];
     bool* in_mst = new bool[n]();
@@ -121,7 +127,6 @@ int build_mst_prim(const GraphBase* graph, MSTResult_t* out_mst)
             delete[] key;
             delete[] parent;
             delete[] in_mst;
-            delete[] id_to_index;
             delete[] all_ids;
             return ERR_DISCONNECTED;
         }
@@ -136,7 +141,7 @@ int build_mst_prim(const GraphBase* graph, MSTResult_t* out_mst)
         graph->get_neighbors(city_id, &neighbors, &neighbor_count);
 
         for (int i = 0; i < neighbor_count; ++i) {
-            int v = id_to_index[neighbors[i].to];
+            int v = find_city_index(all_ids, n, neighbors[i].to);
             int weight = neighbors[i].weight;
 
             if (v >= 0 && !in_mst[v] && weight < key[v]) {
@@ -175,7 +180,6 @@ int build_mst_prim(const GraphBase* graph, MSTResult_t* out_mst)
     delete[] key;
     delete[] parent;
     delete[] in_mst;
-    delete[] id_to_index;
     delete[] all_ids;
 
     return SUCCESS;
@@ -257,23 +261,16 @@ int build_mst_kruskal(const GraphBase* graph, MSTResult_t* out_mst)
         parent[i] = i;
     }
 
-    /* Kruskal 主循环 */
-    const int max_id = graph->get_max_vertex_count();
-    int* id_to_index = new int[max_id];
-    for (int i = 0; i < max_id; ++i) {
-        id_to_index[i] = -1;
-    }
-    for (int i = 0; i < all_count; ++i) {
-        id_to_index[all_ids[i]] = i;
-    }
-
     Edge_t* mst_edges = new Edge_t[n - 1];
     int mst_count = 0;
     int total_cost = 0;
 
     for (int i = 0; i < edge_count && mst_count < n - 1; ++i) {
-        int idx_from = id_to_index[all_edges[i].from];
-        int idx_to = id_to_index[all_edges[i].to];
+        int idx_from = find_city_index(all_ids, n, all_edges[i].from);
+        int idx_to = find_city_index(all_ids, n, all_edges[i].to);
+        if (idx_from < 0 || idx_to < 0) {
+            continue;
+        }
 
         if (union_find_find(parent, idx_from) !=
             union_find_find(parent, idx_to)) {
@@ -288,7 +285,6 @@ int build_mst_kruskal(const GraphBase* graph, MSTResult_t* out_mst)
     delete[] all_edges;
     delete[] rank;
     delete[] parent;
-    delete[] id_to_index;
     delete[] all_ids;
 
     if (mst_count != n - 1) {

@@ -7,6 +7,33 @@
 
 ---
 
+## [2.1.0] — 2026-07-02
+
+### Added
+
+- **JSON 路网数据格式**：数据文件从 `.txt` 迁移为 `.json`，字段包含 `graph_type`、`cities`、`roads`。
+- **新建路网功能**：菜单「数据文件管理」新增「新建路网」，CLI 新增 `new_network <type> <file>`，支持创建有向/无向空路网。
+- `FileManager::detect_graph_type()`：加载前预读 JSON 中的图类型，用于自动创建匹配的图对象。
+- `RoadNetwork::reset()`：支持运行时重置为空的有向图或无向图。
+- `CongestionSimulator::set_graph()` 与 `StructureComparator::set_graphs()`：路网重置后刷新运行时服务指针。
+
+### Changed
+
+- 文件列表、保存、加载、自动加载统一识别 `data/*.json`。
+- 菜单、CLI、Qt 入口加载路网时，均先识别 `graph_type`，再按有向/无向类型重建路网并加载数据。
+- `bin/network_console.exe` 已同步为最新构建产物，可直接从 `bin/` 目录运行并正确定位项目根目录下的 `data/`。
+- README 与课程设计报告同步更新 JSON 格式、新建路网、CLI 命令和数据文件管理说明。
+
+### Fixed
+
+- 修复直接打开 `bin/network_console.exe` 时找不到 `data/` 目录的问题。
+- 修复将 JSON 中 `graph_type` 从 `0` 改为 `1` 后被误报为“文件格式错误”的问题。
+- 修复 DFS/BFS、Dijkstra、Floyd、Prim/Kruskal、拓扑排序等算法在城市 ID 非连续时可能错误使用 ID 作为数组下标的问题。
+- 修复 Windows/PowerShell 写出的 UTF-8 BOM JSON 文件无法解析的问题。
+- 修复有向图加载后拥堵模拟器、结构对比器仍指向旧图对象的潜在悬空指针问题。
+
+---
+
 ## [2.0.2] — 2026-06-21
 
 ### Changed

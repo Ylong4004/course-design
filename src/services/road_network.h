@@ -42,6 +42,8 @@ public:
     /** @brief 获取图类型 */
     GraphType get_type() const;
 
+    int reset(GraphType new_type);
+
     /* ========== 城市管理（双结构同步） ========== */
 
     int add_city(int id, const char *name);

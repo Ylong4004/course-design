@@ -107,6 +107,9 @@ private:
     /* ========== 初始化 ========== */
     void init_network();
     void load_default_data(); /* 首次运行加载示例路网 */
+    void refresh_runtime_services();
+    int load_network_file(const char *path);
+    int create_network_file(GraphType graph_type, const char *path);
     void reset_congestion_state();
 };
 

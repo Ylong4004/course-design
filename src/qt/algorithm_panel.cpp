@@ -20,6 +20,21 @@
 #include <QMessageBox>
 #include <QScrollBar>
 
+static int find_city_index(const int *city_ids, int city_count, int city_id)
+{
+    if (city_ids == nullptr) {
+        return -1;
+    }
+
+    for (int i = 0; i < city_count; ++i) {
+        if (city_ids[i] == city_id) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 AlgorithmPanel::AlgorithmPanel(RoadNetwork *network, QWidget *parent)
     : QWidget(parent),
       m_network(network),
@@ -223,15 +238,27 @@ void AlgorithmPanel::execute_dijkstra(int start, int end)
 
     if (end > 0) {
         /* 单条路径 */
+        int *ids = nullptr;
+        int id_count = 0;
+        int end_index = -1;
+        if (g->get_all_vertex_ids(&ids, &id_count) == SUCCESS) {
+            end_index = find_city_index(ids, id_count, end);
+        }
+        if (end_index < 0) {
+            append_output(QString("  城市 %1 不存在。").arg(end));
+            delete[] ids;
+            delete[] dist; delete[] prev; return;
+        }
+
         int *path = nullptr;
         int plen  = 0;
-        if (dijkstra_get_path(prev, vcount, start, end,
+        if (dijkstra_get_path(g, prev, vcount, start, end,
                               &path, &plen) == SUCCESS && plen > 0) {
             City_t c1, c2;
             g->get_vertex(start, &c1);
             g->get_vertex(end, &c2);
             append_output(QString("  %1 → %2  距离: %3")
-                .arg(c1.name).arg(c2.name).arg(dist[end]));
+                .arg(c1.name).arg(c2.name).arg(dist[end_index]));
             QString route = "  路径: ";
             for (int i = 0; i < plen; ++i) {
                 City_t cn;
@@ -244,16 +271,21 @@ void AlgorithmPanel::execute_dijkstra(int start, int end)
             append_output(QString("  城市 %1 不可达。").arg(end));
         }
         delete[] path;
+        delete[] ids;
     } else {
         /* 全量输出 */
-        for (int i = 0; i < vcount; ++i) {
+        int *ids = nullptr;
+        int id_count = 0;
+        g->get_all_vertex_ids(&ids, &id_count);
+        for (int i = 0; i < id_count; ++i) {
             City_t c;
-            if (g->get_vertex(i, &c) == SUCCESS) {
+            if (g->get_vertex(ids[i], &c) == SUCCESS) {
                 append_output(QString("  → %1 [%2]: 距离 %3")
                     .arg(c.name).arg(c.id)
                     .arg(dist[i] == INF_WEIGHT ? -1 : dist[i]));
             }
         }
+        delete[] ids;
     }
 
     delete[] dist;
@@ -278,16 +310,19 @@ void AlgorithmPanel::execute_floyd()
 
     /* 表头 */
     QString header = "     ";
+    int *ids = nullptr;
+    int id_count = 0;
+    g->get_all_vertex_ids(&ids, &id_count);
     for (int j = 0; j < vcount; ++j) {
         City_t c;
-        g->get_vertex(j, &c);
+        g->get_vertex(ids[j], &c);
         header += QString("%1 ").arg(c.name, 6);
     }
     append_output(header);
 
     for (int i = 0; i < vcount; ++i) {
         City_t ci;
-        g->get_vertex(i, &ci);
+        g->get_vertex(ids[i], &ci);
         QString row = QString("%1 ").arg(ci.name, -4);
         for (int j = 0; j < vcount; ++j) {
             if (dist[i][j] == INF_WEIGHT) {
@@ -301,6 +336,7 @@ void AlgorithmPanel::execute_floyd()
 
     for (int i = 0; i < vcount; ++i) { delete[] dist[i]; delete[] next[i]; }
     delete[] dist; delete[] next;
+    delete[] ids;
 }
 
 void AlgorithmPanel::execute_prim()

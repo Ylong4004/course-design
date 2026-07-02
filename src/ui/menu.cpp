@@ -25,34 +25,15 @@
 #include <cstdlib>
 #include <cstring>
 
-/* 列出 data/ 下所有 .txt 文件 */
+/* 列出 data/ 下所有 .json 文件 */
 /**
- * @brief 列出 data/ 目录下所有 .txt 路网文件
+ * @brief 列出 data/ 目录下所有 .json 路网文件
  * @return 文件路径字符串列表
  */
 static std::vector<std::string> list_network_files()
 {
     std::vector<std::string> files;
-    std::system("dir /b .\\data\\*.txt > .\\data\\_list.tmp 2>nul");
-    std::ifstream infile("./data/_list.tmp");
-    if (!infile.is_open())
-    {
-        return files;
-    }
-    std::string name;
-    while (std::getline(infile, name))
-    {
-        while (!name.empty() && (name.back() == '\r'))
-        {
-            name.pop_back();
-        }
-        if (!name.empty())
-        {
-            files.push_back("./data/" + name);
-        }
-    }
-    infile.close();
-    std::remove("./data/_list.tmp");
+    FileManager::list_data_files(files, true);
     return files;
 }
 
@@ -108,7 +89,7 @@ MenuSystem::MenuSystem()
       congestion_congested_weight(INF_WEIGHT),
       switch_to_cli(false)
 {
-    std::strcpy(current_file_path, "./data/default.txt");
+    std::strcpy(current_file_path, "./data/default.json");
 }
 
 /**
@@ -683,20 +664,20 @@ void MenuSystem::menu_file_manage()
         std::cout << " 2. 从文件加载路网" << std::endl;
         std::cout << " 3. 切换路网（从 data/ 选择）" << std::endl;
         std::cout << " 4. 设置默认文件路径" << std::endl;
+        std::cout << " 5. 新建路网" << std::endl;
         print_return_hint();
 
-        const int choice = get_menu_choice(0, 4);
+        const int choice = get_menu_choice(0, 5);
         if (choice == 0)
         {
             return;
         }
 
         GraphBase *matrix_graph = network->get_graph(STORAGE_MATRIX);
-        GraphBase *list_graph = network->get_graph(STORAGE_LIST);
 
         if (choice == 3)
         {
-            /* 切换路网：列出 data/ 下所有 .txt 文件 */
+            /* 切换路网：列出 data/ 下所有 .json 文件 */
             std::vector<std::string> files = list_network_files();
             if (files.empty())
             {
@@ -717,17 +698,9 @@ void MenuSystem::menu_file_manage()
                 continue;
             }
             const char *fpath = files[fchoice - 1].c_str();
-            reset_congestion_state();
-            clear_graph(matrix_graph);
-            clear_graph(list_graph);
-            int ret = FileManager::load_from_file(matrix_graph, fpath);
+            int ret = load_network_file(fpath);
             if (ret == SUCCESS)
             {
-                ret = FileManager::load_from_file(list_graph, fpath);
-            }
-            if (ret == SUCCESS)
-            {
-                std::strcpy(current_file_path, fpath);
                 Formatter::print_success(("已切换至: " + files[fchoice - 1]).c_str());
             }
             else
@@ -740,13 +713,13 @@ void MenuSystem::menu_file_manage()
 
         std::string filename;
         std::string fullpath;
-        if (choice == 1 || choice == 2)
+        if (choice == 1 || choice == 2 || choice == 5)
         {
-            Validator::read_str_safe("文件名（仅 .txt 后缀，保存在 data/ 目录）: ", filename, 255);
-            if (filename.empty() || filename.size() < 5 ||
-                filename.compare(filename.size() - 4, 4, ".txt") != 0)
+            Validator::read_str_safe("文件名（仅 .json 后缀，保存在 data/ 目录）: ", filename, 255);
+            if (filename.empty() || filename.size() < 6 ||
+                filename.compare(filename.size() - 5, 5, ".json") != 0)
             {
-                filename += ".txt";
+                filename += ".json";
             }
             fullpath = "./data/" + filename;
         }
@@ -771,22 +744,28 @@ void MenuSystem::menu_file_manage()
         }
         else if (choice == 2)
         {
-            reset_congestion_state();
-            clear_graph(matrix_graph);
-            clear_graph(list_graph);
-            int ret = FileManager::load_from_file(matrix_graph, fullpath.c_str());
+            int ret = load_network_file(fullpath.c_str());
             if (ret == SUCCESS)
             {
-                ret = FileManager::load_from_file(list_graph, fullpath.c_str());
-            }
-            if (ret == SUCCESS)
-            {
-                std::strcpy(current_file_path, fullpath.c_str());
                 Formatter::print_success(("路网已从文件加载: " + fullpath).c_str());
             }
             else
             {
                 Formatter::print_error("加载文件失败。");
+            }
+        }
+        else if (choice == 5)
+        {
+            const int type_value = Validator::read_int_safe("图类型（0=无向图，1=有向图）: ", 0, 1);
+            int ret = create_network_file(static_cast<GraphType>(type_value),
+                                          fullpath.c_str());
+            if (ret == SUCCESS)
+            {
+                Formatter::print_success(("已新建空路网: " + fullpath).c_str());
+            }
+            else
+            {
+                Formatter::print_error("新建路网失败，请检查文件路径。");
             }
         }
         else if (choice == 4)
@@ -824,6 +803,98 @@ void MenuSystem::init_network()
     comparator = new StructureComparator(network->get_graph(STORAGE_MATRIX), network->get_graph(STORAGE_LIST));
 }
 
+void MenuSystem::refresh_runtime_services()
+{
+    if (network == nullptr)
+    {
+        return;
+    }
+
+    if (simulator != nullptr)
+    {
+        simulator->set_graph(network->get_graph(STORAGE_MATRIX));
+    }
+    if (comparator != nullptr)
+    {
+        comparator->set_graphs(network->get_graph(STORAGE_MATRIX),
+                               network->get_graph(STORAGE_LIST));
+    }
+}
+
+int MenuSystem::load_network_file(const char *path)
+{
+    if (network == nullptr || path == nullptr || path[0] == '\0')
+    {
+        return ERR_INVALID_INPUT;
+    }
+
+    GraphType file_graph_type = GRAPH_UNDIRECTED;
+    int ret = FileManager::detect_graph_type(path, &file_graph_type);
+    if (ret != SUCCESS)
+    {
+        return ret;
+    }
+
+    RoadNetwork temp_network(MAX_CITY_COUNT, file_graph_type);
+    ret = FileManager::load_from_file(temp_network.get_graph(STORAGE_MATRIX), path);
+    if (ret == SUCCESS)
+    {
+        ret = FileManager::load_from_file(temp_network.get_graph(STORAGE_LIST), path);
+    }
+    if (ret != SUCCESS)
+    {
+        return ret;
+    }
+
+    reset_congestion_state();
+    ret = network->reset(file_graph_type);
+    if (ret != SUCCESS)
+    {
+        return ret;
+    }
+    refresh_runtime_services();
+
+    ret = FileManager::load_from_file(network->get_graph(STORAGE_MATRIX), path);
+    if (ret == SUCCESS)
+    {
+        ret = FileManager::load_from_file(network->get_graph(STORAGE_LIST), path);
+    }
+    if (ret == SUCCESS)
+    {
+        std::strncpy(current_file_path, path, sizeof(current_file_path) - 1);
+        current_file_path[sizeof(current_file_path) - 1] = '\0';
+    }
+
+    return ret;
+}
+
+int MenuSystem::create_network_file(GraphType graph_type, const char *path)
+{
+    if (network == nullptr || path == nullptr || path[0] == '\0')
+    {
+        return ERR_INVALID_INPUT;
+    }
+
+    RoadNetwork empty_network(MAX_CITY_COUNT, graph_type);
+    int ret = FileManager::save_to_file(empty_network.get_graph(STORAGE_MATRIX), path);
+    if (ret != SUCCESS)
+    {
+        return ret;
+    }
+
+    reset_congestion_state();
+    ret = network->reset(graph_type);
+    if (ret != SUCCESS)
+    {
+        return ret;
+    }
+    refresh_runtime_services();
+
+    std::strncpy(current_file_path, path, sizeof(current_file_path) - 1);
+    current_file_path[sizeof(current_file_path) - 1] = '\0';
+    return SUCCESS;
+}
+
 void MenuSystem::load_default_data()
 {
     if (network == nullptr)
@@ -832,46 +903,24 @@ void MenuSystem::load_default_data()
         return;
     }
 
-    reset_congestion_state();
-
-    GraphBase *matrix_graph = network->get_graph(STORAGE_MATRIX);
-    GraphBase *list_graph = network->get_graph(STORAGE_LIST);
-    if (matrix_graph == nullptr || list_graph == nullptr)
+    /* 优先加载 data/default.json */
+    const char *default_file = "./data/default.json";
+    int ret = load_network_file(default_file);
+    if (ret == SUCCESS)
     {
-        Formatter::print_error("底层图结构不可用。");
+        Formatter::print_success("已加载默认路网数据（data/default.json）。");
         return;
     }
 
-    /* 优先加载 data/default.txt */
-    const char *default_file = "./data/default.txt";
-    int ret = FileManager::load_from_file(matrix_graph, default_file);
-    if (ret == SUCCESS)
-    {
-        ret = FileManager::load_from_file(list_graph, default_file);
-        if (ret == SUCCESS)
-        {
-            std::strcpy(current_file_path, default_file);
-            Formatter::print_success("已加载默认路网数据（data/default.txt）。");
-            return;
-        }
-    }
-
-    /* default.txt 不存在或加载失败，尝试 data/ 下第一个 .txt */
+    /* default.json 不存在或加载失败，尝试 data/ 下第一个 .json */
     std::vector<std::string> files = list_network_files();
     for (const auto &f : files)
     {
-        if (f.find("default.txt") != std::string::npos)
+        if (f.find("default.json") != std::string::npos)
             continue;
-        clear_graph(matrix_graph);
-        clear_graph(list_graph);
-        ret = FileManager::load_from_file(matrix_graph, f.c_str());
+        ret = load_network_file(f.c_str());
         if (ret == SUCCESS)
         {
-            ret = FileManager::load_from_file(list_graph, f.c_str());
-        }
-        if (ret == SUCCESS)
-        {
-            std::strcpy(current_file_path, f.c_str());
             Formatter::print_success(("已加载路网文件: " + f).c_str());
             return;
         }

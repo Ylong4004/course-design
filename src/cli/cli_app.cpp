@@ -31,6 +31,15 @@ static void cli_init_services(RoadNetwork **out_network,
 {
     safe_new(*out_network, RoadNetwork, MAX_CITY_COUNT, GRAPH_UNDIRECTED);
 
+    bool should_auto_load = false;
+    if (FileManager::data_file_exists()) {
+        GraphType file_graph_type = GRAPH_UNDIRECTED;
+        if (FileManager::detect_graph_type("./data/default.json", &file_graph_type) == SUCCESS) {
+            (*out_network)->reset(file_graph_type);
+            should_auto_load = true;
+        }
+    }
+
     GraphBase *list_graph   = (*out_network)->get_graph(STORAGE_LIST);
     GraphBase *matrix_graph = (*out_network)->get_graph(STORAGE_MATRIX);
 
@@ -39,10 +48,10 @@ static void cli_init_services(RoadNetwork **out_network,
              matrix_graph, list_graph);
 
     /* 尝试自动加载历史数据 */
-    if (FileManager::data_file_exists()) {
+    if (should_auto_load) {
         FileManager::auto_load(list_graph);
         FileManager::auto_load(matrix_graph);
-        CommandParser::set_current_file("./data/default.txt");
+        CommandParser::set_current_file("./data/default.json");
     }
 }
 

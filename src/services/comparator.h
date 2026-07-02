@@ -28,6 +28,9 @@ public:
                         GraphBase *list_graph);
     ~StructureComparator();
 
+    void set_graphs(GraphBase *new_matrix_graph,
+                    GraphBase *new_list_graph);
+
     /* ========== 单指标统计 ========== */
 
     /** @brief 统计内存占用 */

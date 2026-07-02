@@ -14,7 +14,8 @@
 - 手写实现 **队列、栈、并查集、最小堆优先队列** 四种基础数据结构
 - 支持路网编辑、最短路径规划、最小生成树、拥堵仿真、性能对比、数据持久化
 - 23 个自动化测试用例（合法/非法/边界/交叉验证全覆盖）
-- **路网数据文件化管理**：程序启动自动加载，支持多路网切换
+- **JSON 路网数据文件化管理**：程序启动自动加载，支持多路网切换、新建有向/无向路网
+- **非连续城市 ID 支持**：算法内部使用 ID→数组下标映射，城市编号无需从 0 或 1 连续递增
 
 ---
 
@@ -26,7 +27,6 @@ course-design/
 │   ├── design_topic.md              # 选题说明
 │   ├── general_requipment.md        # 课程设计总体要求
 │   ├── coding_standard.md           # 代码编写规范
-│   ├── CHANGELOG.md                 # 更新日志
 │   ├── todo.md                      # 开发任务清单
 │   ├── cli_commands.md              # CLI 命令速查手册
 │   └── prg/                         # 流程图目录
@@ -42,10 +42,12 @@ course-design/
 │   └── test/                        # test_cases.* (23 个测试用例)
 ├── bin/                             # 二进制程序文件
 │   └── network_console.exe          # g++编译产物
-├── data/                            # 路网数据文件（.txt）
-│   └── default.txt                  # 默认路网
+├── data/                            # 路网数据文件（.json）
+│   ├── default.json                 # 默认路网
+│   └── *.json                       # 其他城市/区域路网
 ├── CMakeLists.txt                   # CMake 构建文件（支持 Qt5/Qt6 + 纯控制台）
 ├── .gitignore
+├── CHANGELOG.md                     # 更新日志
 └── README.md
 ```
 
@@ -115,10 +117,11 @@ course-design/
 ### 8. 数据文件管理（主菜单 8）
 
 ```
- 1. 保存路网到文件        → 输入文件名，保存为 data/xxx.txt
+ 1. 保存路网到文件        → 输入文件名，保存为 data/xxx.json
  2. 从文件加载路网        → 输入文件名，替换当前路网
  3. 切换路网（从 data/ 选择） → 列出所有可用文件，选择后加载
  4. 设置默认文件路径      → 修改自动加载的默认文件
+ 5. 新建路网              → 选择有向/无向并生成空 JSON 文件
 ```
 
 ### 9. 帮助 / 关于（主菜单 9）
@@ -129,34 +132,35 @@ course-design/
 
 菜单中选 10 或启动时加 `--cli` 进入。`menu` 切回菜单，`exit` 退出。
 
-| 命令               | 参数                | 说明               |
-| ------------------ | ------------------- | ------------------ |
-| `new_city`       | `<id> <name>`     | 添加城市           |
-| `del_city`       | `<id>`            | 删除城市           |
-| `new_road`       | `<from> <to> <w>` | 添加道路           |
-| `del_road`       | `<from> <to>`     | 删除道路           |
-| `update_road`    | `<from> <to> <w>` | 修改权值           |
-| `show_network`   | —                  | 路网详情           |
-| `dfs`            | `<start>`         | 深度优先遍历       |
-| `bfs`            | `<start>`         | 广度优先遍历       |
-| `dijkstra`       | `<start> [end]`   | 最短路径           |
-| `floyd`          | —                  | 全源最短路径表     |
-| `prim`           | —                  | Prim 最小生成树    |
-| `kruskal`        | —                  | Kruskal 最小生成树 |
-| `topo`           | —                  | 拓扑排序           |
-| `congest`        | `<from> <to> <w>` | 设置拥堵           |
-| `restore`        | —                  | 恢复拥堵           |
-| `congest_list`   | —                  | 查看拥堵记录       |
-| `congest_report` | `<start>`         | 拥堵对比报告       |
-| `compare`        | —                  | 结构性能对比       |
-| `save`           | `[filename]`      | 保存路网           |
-| `load`           | `[filename]`      | 加载路网           |
-| `list`           | —                  | 列出可用路网文件   |
-| `help`           | —                  | 命令帮助           |
-| `menu`           | —                  | 切回菜单模式       |
-| `exit`           | —                  | 退出               |
+| 命令               | 参数                | 说明                                             |
+| ------------------ | ------------------- | ------------------------------------------------ |
+| `new_network`    | `<type> <file>`   | 新建空路网，type 支持`0/1/undirected/directed` |
+| `new_city`       | `<id> <name>`     | 添加城市                                         |
+| `del_city`       | `<id>`            | 删除城市                                         |
+| `new_road`       | `<from> <to> <w>` | 添加道路                                         |
+| `del_road`       | `<from> <to>`     | 删除道路                                         |
+| `update_road`    | `<from> <to> <w>` | 修改权值                                         |
+| `show_network`   | —                  | 路网详情                                         |
+| `dfs`            | `<start>`         | 深度优先遍历                                     |
+| `bfs`            | `<start>`         | 广度优先遍历                                     |
+| `dijkstra`       | `<start> [end]`   | 最短路径                                         |
+| `floyd`          | —                  | 全源最短路径表                                   |
+| `prim`           | —                  | Prim 最小生成树                                  |
+| `kruskal`        | —                  | Kruskal 最小生成树                               |
+| `topo`           | —                  | 拓扑排序                                         |
+| `congest`        | `<from> <to> <w>` | 设置拥堵                                         |
+| `restore`        | —                  | 恢复拥堵                                         |
+| `congest_list`   | —                  | 查看拥堵记录                                     |
+| `congest_report` | `<start>`         | 拥堵对比报告                                     |
+| `compare`        | —                  | 结构性能对比                                     |
+| `save`           | `[filename]`      | 保存路网                                         |
+| `load`           | `[filename]`      | 加载路网                                         |
+| `list`           | —                  | 列出可用路网文件                                 |
+| `help`           | —                  | 命令帮助                                         |
+| `menu`           | —                  | 切回菜单模式                                     |
+| `exit`           | —                  | 退出                                             |
 
-> 文件名自动补全 `../data/` 前缀和 `.txt` 后缀。
+> 文件名自动补全 `data/` 前缀和 `.json` 后缀。程序从项目根目录、`bin/`、`build/bin/` 启动时都会自动定位 `data/` 目录。
 
 ### 0. 退出系统
 
@@ -164,33 +168,23 @@ course-design/
 
 ---
 
-## 数据文件格式（TXT）
+## 数据文件格式（JSON）
 
-```
-图类型  城市数  道路数          ← 图类型：0=无向图, 1=有向图
-城市ID  城市名称               ← 每个城市一行
-城市ID  城市名称
-...
-起点ID  终点ID  权值           ← 每条道路一行
-起点ID  终点ID  权值
-...
-```
+字段说明：`graph_type` 中 `0=无向图`、`1=有向图`；`cities` 保存城市；`roads` 保存道路。加载时程序会先读取 `graph_type`，再自动切换为有向图或无向图。
 
-示例（`data/default.txt`）：
+示例（`data/default.json`）：
 
-```
-0 5 6
-1 City1
-2 City2
-3 City3
-4 City4
-5 City5
-1 2 10
-1 3 18
-2 3 6
-2 4 14
-3 5 7
-4 5 9
+```json
+{
+  "graph_type": 0,
+  "cities": [
+    {"id": 1, "name": "City1"},
+    {"id": 2, "name": "City2"}
+  ],
+  "roads": [
+    {"from": 1, "to": 2, "weight": 10}
+  ]
+}
 ```
 
 ---
@@ -261,6 +255,8 @@ bin/network_console.exe --cli
 bin/network_console.exe dijkstra 1 5
 ```
 
+> 也可以直接进入 `bin/` 后双击或运行 `network_console.exe`。程序会自动向上查找项目根目录下的 `data/` 文件夹。
+
 ### 运行测试
 
 编辑 `main.cpp`，把 `// run_all_tests();` 和 `// return 0;` 前面的 `//` 去掉，重新编译运行。
@@ -275,9 +271,9 @@ bin/network_console.exe dijkstra 1 5
 
 ### 新建路网
 
-1. 在 `data/` 下新建 `.txt` 文件（按格式写顶点和边）
-2. 启动程序 → 主菜单 8 → 3 切换路网 → 选择新文件
-3. 或在程序中手动添加城市/道路后 → 主菜单 8 → 1 保存
+1. 菜单方式：主菜单 8 → 5 新建路网 → 选择 `0=无向图` 或 `1=有向图` → 输入文件名
+2. CLI 方式：`new_network 0 my_network` 或 `new_network 1 directed_network`
+3. 新建后在“路网编辑”中添加城市/道路，退出或手动保存时写回当前 JSON 文件
 
 ---
 

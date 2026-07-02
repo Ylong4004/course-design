@@ -79,6 +79,8 @@ private:
     void create_dock_panels();
     void init_services();
     void load_default_data();
+    void refresh_runtime_services();
+    int load_network_file(const char *path);
 
     /* ---------- 成员 ---------- */
     /* 服务层（Qt 独有实例） */

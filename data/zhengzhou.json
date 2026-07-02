@@ -1,0 +1,13 @@
+{
+  "graph_type": 1,
+  "cities": [
+    {"id": 1, "name": "惠济区"},
+    {"id": 2, "name": "金水区"},
+    {"id": 3, "name": "二七区"}
+  ],
+  "roads": [
+    {"from": 1, "to": 2, "weight": 3},
+    {"from": 1, "to": 3, "weight": 2},
+    {"from": 2, "to": 3, "weight": 1}
+  ]
+}

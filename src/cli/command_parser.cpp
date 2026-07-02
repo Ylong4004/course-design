@@ -23,12 +23,13 @@
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
+#include <cctype>
 
 /* ============================================================ */
 /*  当前路网文件路径追踪                                          */
 /* ============================================================ */
 
-static char g_current_file[256] = "./data/default.txt";
+static char g_current_file[256] = "./data/default.json";
 
 const char *CommandParser::get_current_file()
 {
@@ -79,6 +80,68 @@ int CommandParser::to_int(const std::string &s)
     return std::atoi(s.c_str());
 }
 
+static int find_city_index(const int *city_ids, int city_count, int city_id)
+{
+    if (city_ids == nullptr)
+        return -1;
+
+    for (int i = 0; i < city_count; ++i)
+    {
+        if (city_ids[i] == city_id)
+            return i;
+    }
+
+    return -1;
+}
+
+static std::string to_lower_ascii(const std::string &text)
+{
+    std::string lowered = text;
+    for (std::size_t i = 0; i < lowered.size(); ++i)
+    {
+        lowered[i] = static_cast<char>(
+            std::tolower(static_cast<unsigned char>(lowered[i])));
+    }
+    return lowered;
+}
+
+static bool parse_graph_type_arg(const std::string &arg, GraphType *out_type)
+{
+    if (out_type == nullptr)
+    {
+        return false;
+    }
+
+    std::string value = to_lower_ascii(arg);
+    if (value == "0" || value == "undirected" || value == "undir")
+    {
+        *out_type = GRAPH_UNDIRECTED;
+        return true;
+    }
+    if (value == "1" || value == "directed" || value == "dir")
+    {
+        *out_type = GRAPH_DIRECTED;
+        return true;
+    }
+
+    return false;
+}
+
+static void refresh_runtime_services(RoadNetwork &network,
+                                     CongestionSimulator *simulator,
+                                     StructureComparator *comparator)
+{
+    if (simulator != nullptr)
+    {
+        simulator->set_graph(network.get_graph(STORAGE_MATRIX));
+    }
+    if (comparator != nullptr)
+    {
+        comparator->set_graphs(network.get_graph(STORAGE_MATRIX),
+                               network.get_graph(STORAGE_LIST));
+    }
+}
+
 void CommandParser::print_error(const char *msg)
 {
     std::cout << "[错误] " << msg << std::endl;
@@ -112,6 +175,7 @@ void CommandParser::print_help()
     std::cout << std::endl;
 
     const char *cmds[][2] = {
+        {"new_network <type> <file>", "新建空路网，type=0/1/undirected/directed"},
         {"new_city <id> <name>", "添加城市"},
         {"del_city <id>", "删除城市"},
         {"new_road <from> <to> <w>", "添加道路（权值w）"},
@@ -204,7 +268,11 @@ bool CommandParser::dispatch(const std::vector<std::string> &argv,
 {
     const std::string &cmd = argv[0];
 
-    if (cmd == "new_city")
+    if (cmd == "new_network")
+    {
+        cmd_new_network(argv, network, simulator, comparator);
+    }
+    else if (cmd == "new_city")
     {
         cmd_new_city(argv, network);
     }
@@ -274,7 +342,7 @@ bool CommandParser::dispatch(const std::vector<std::string> &argv,
     }
     else if (cmd == "load")
     {
-        cmd_load(argv, network);
+        cmd_load(argv, network, simulator, comparator);
     }
     else if (cmd == "list")
     {
@@ -599,15 +667,31 @@ void CommandParser::cmd_dijkstra(const std::vector<std::string> &argv,
     {
         /* 指定终点：输出单条路径 */
         int end = to_int(argv[2]);
+        int *city_ids = nullptr;
+        int city_count = 0;
+        int end_index = -1;
+        if (g->get_all_vertex_ids(&city_ids, &city_count) == SUCCESS)
+        {
+            end_index = find_city_index(city_ids, city_count, end);
+        }
+        if (end_index < 0)
+        {
+            print_error("终点城市不存在。");
+            delete[] city_ids;
+            delete[] dist;
+            delete[] prev;
+            return;
+        }
+
         int *path = nullptr;
         int plen = 0;
-        if (dijkstra_get_path(prev, vcount, start, end, &path, &plen) == SUCCESS && plen > 0)
+        if (dijkstra_get_path(g, prev, vcount, start, end, &path, &plen) == SUCCESS && plen > 0)
         {
             City_t c1, c2;
             g->get_vertex(start, &c1);
             g->get_vertex(end, &c2);
             std::cout << "最短路径 " << c1.name << " -> " << c2.name
-                      << " : 距离=" << dist[end]
+                      << " : 距离=" << dist[end_index]
                       << ", 经过" << plen << "个城市" << std::endl;
             std::cout << "路径: ";
             for (int i = 0; i < plen; ++i)
@@ -626,6 +710,7 @@ void CommandParser::cmd_dijkstra(const std::vector<std::string> &argv,
         }
         if (path)
             delete[] path;
+        delete[] city_ids;
     }
     else
     {
@@ -852,12 +937,57 @@ static std::string resolve_path(const std::string &input)
     {
         return input;
     }
-    /* 自动补 .txt 后缀 */
-    if (input.size() < 4 || input.compare(input.size() - 4, 4, ".txt") != 0)
+    /* 自动补 .json 后缀 */
+    if (input.size() < 5 || input.compare(input.size() - 5, 5, ".json") != 0)
     {
-        return "./data/" + input + ".txt";
+        return "./data/" + input + ".json";
     }
     return "./data/" + input;
+}
+
+void CommandParser::cmd_new_network(const std::vector<std::string> &argv,
+                                    RoadNetwork &network,
+                                    CongestionSimulator *simulator,
+                                    StructureComparator *comparator)
+{
+    if (argv.size() < 3)
+    {
+        print_error("用法: new_network <0|1|undirected|directed> <filename>");
+        return;
+    }
+
+    GraphType graph_type = GRAPH_UNDIRECTED;
+    if (!parse_graph_type_arg(argv[1], &graph_type))
+    {
+        print_error("图类型必须是 0/1 或 undirected/directed。");
+        return;
+    }
+
+    std::string fullpath = resolve_path(argv[2]);
+    RoadNetwork empty_network(MAX_CITY_COUNT, graph_type);
+    int rc = FileManager::save_to_file(empty_network.get_graph(STORAGE_MATRIX),
+                                       fullpath.c_str());
+    if (rc != SUCCESS)
+    {
+        print_error("新建路网文件失败，请检查 data/ 目录或文件路径。");
+        return;
+    }
+
+    if (simulator != nullptr)
+    {
+        simulator->restore_all();
+    }
+
+    rc = network.reset(graph_type);
+    if (rc != SUCCESS)
+    {
+        print_error("切换路网类型失败。");
+        return;
+    }
+    refresh_runtime_services(network, simulator, comparator);
+    CommandParser::set_current_file(fullpath.c_str());
+
+    print_success(("已新建空路网: " + fullpath).c_str());
 }
 
 void CommandParser::cmd_save(const std::vector<std::string> &argv,
@@ -890,7 +1020,9 @@ void CommandParser::cmd_save(const std::vector<std::string> &argv,
 }
 
 void CommandParser::cmd_load(const std::vector<std::string> &argv,
-                             RoadNetwork &network)
+                             RoadNetwork &network,
+                             CongestionSimulator *simulator,
+                             StructureComparator *comparator)
 {
     std::string fullpath;
     if (argv.size() >= 2)
@@ -899,16 +1031,50 @@ void CommandParser::cmd_load(const std::vector<std::string> &argv,
     }
     else
     {
-        fullpath = "./data/default.txt";
+        fullpath = "./data/default.json";
     }
-    GraphBase *g = network.get_graph(STORAGE_LIST);
-    int rc = FileManager::load_from_file(g, fullpath.c_str());
+    GraphType file_graph_type = GRAPH_UNDIRECTED;
+    int rc = FileManager::detect_graph_type(fullpath.c_str(), &file_graph_type);
+    if (rc == SUCCESS)
+    {
+        RoadNetwork temp_network(MAX_CITY_COUNT, file_graph_type);
+        rc = FileManager::load_from_file(temp_network.get_graph(STORAGE_LIST),
+                                         fullpath.c_str());
+        if (rc == SUCCESS)
+        {
+            rc = FileManager::load_from_file(temp_network.get_graph(STORAGE_MATRIX),
+                                             fullpath.c_str());
+        }
+    }
+
+    if (rc == SUCCESS)
+    {
+        if (simulator != nullptr)
+        {
+            simulator->restore_all();
+        }
+
+        rc = network.reset(file_graph_type);
+        if (rc != SUCCESS)
+        {
+            print_error("切换路网类型失败。");
+            return;
+        }
+        refresh_runtime_services(network, simulator, comparator);
+
+        GraphBase *g = network.get_graph(STORAGE_LIST);
+        rc = FileManager::load_from_file(g, fullpath.c_str());
+    }
+
+    if (rc == SUCCESS)
+    {
+        GraphBase *mg = network.get_graph(STORAGE_MATRIX);
+        rc = FileManager::load_from_file(mg, fullpath.c_str());
+    }
+
     if (rc == SUCCESS)
     {
         CommandParser::set_current_file(fullpath.c_str());
-        /* 邻接矩阵同步 */
-        GraphBase *mg = network.get_graph(STORAGE_MATRIX);
-        FileManager::load_from_file(mg, fullpath.c_str());
         print_success(("已从 " + fullpath + " 加载。").c_str());
     }
     else if (rc == ERR_FILE_OPEN_FAIL)
@@ -931,30 +1097,26 @@ void CommandParser::cmd_load(const std::vector<std::string> &argv,
 
 void CommandParser::cmd_list()
 {
-    std::system("dir /b .\\data\\*.txt > .\\data\\_list.tmp 2>nul");
-    std::ifstream infile("./data/_list.tmp");
-    if (!infile.is_open())
+    std::vector<std::string> files;
+    int rc = FileManager::list_data_files(files, false);
+    if (rc != SUCCESS)
     {
         print_error("无法列出 data/ 目录下的文件。");
         return;
     }
+
     std::cout << "data/ 目录下的路网文件:" << std::endl;
-    std::string name;
-    bool found = false;
-    while (std::getline(infile, name))
+
+    if (files.empty())
     {
-        while (!name.empty() && name.back() == '\r')
-            name.pop_back();
-        if (!name.empty())
-        {
-            std::cout << "  " << name << std::endl;
-            found = true;
-        }
-    }
-    if (!found)
         std::cout << "  (空)" << std::endl;
-    infile.close();
-    std::remove("./data/_list.tmp");
+        return;
+    }
+
+    for (std::size_t i = 0; i < files.size(); ++i)
+    {
+        std::cout << "  " << files[i] << std::endl;
+    }
 }
 
 void CommandParser::cmd_congest_list(CongestionSimulator *simulator)

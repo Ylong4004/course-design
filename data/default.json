@@ -1,0 +1,18 @@
+{
+  "graph_type": 0,
+  "cities": [
+    {"id": 1, "name": "City1"},
+    {"id": 2, "name": "City2"},
+    {"id": 3, "name": "City3"},
+    {"id": 4, "name": "City4"},
+    {"id": 5, "name": "City5"}
+  ],
+  "roads": [
+    {"from": 1, "to": 2, "weight": 10},
+    {"from": 1, "to": 3, "weight": 18},
+    {"from": 2, "to": 3, "weight": 6},
+    {"from": 2, "to": 4, "weight": 14},
+    {"from": 3, "to": 5, "weight": 7},
+    {"from": 4, "to": 5, "weight": 9}
+  ]
+}

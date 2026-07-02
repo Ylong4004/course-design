@@ -10,6 +10,21 @@
 #include <iostream>
 #include <iomanip>
 
+static int find_city_index(const int* city_ids, int city_count, int city_id)
+{
+    if (city_ids == nullptr) {
+        return -1;
+    }
+
+    for (int i = 0; i < city_count; ++i) {
+        if (city_ids[i] == city_id) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 /* ========================= 拓扑排序（Kahn 算法） ========================== */
 
 /**
@@ -44,17 +59,6 @@ int run_topological_sort(const GraphBase* graph,
     int all_count = 0;
     graph->get_all_vertex_ids(&all_ids, &all_count);
 
-    const int max_id = graph->get_max_vertex_count();
-
-    /* 建立 city_id → 内部下标 映射 */
-    int* id_to_index = new int[max_id];
-    for (int i = 0; i < max_id; ++i) {
-        id_to_index[i] = -1;
-    }
-    for (int i = 0; i < all_count; ++i) {
-        id_to_index[all_ids[i]] = i;
-    }
-
     /* 计算入度 */
     int n = all_count;
     int* indegree = new int[n]();
@@ -65,7 +69,7 @@ int run_topological_sort(const GraphBase* graph,
         graph->get_neighbors(all_ids[i], &neighbors, &neighbor_count);
 
         for (int j = 0; j < neighbor_count; ++j) {
-            int v = id_to_index[neighbors[j].to];
+            int v = find_city_index(all_ids, n, neighbors[j].to);
             if (v >= 0) {
                 indegree[v]++;
             }
@@ -97,7 +101,7 @@ int run_topological_sort(const GraphBase* graph,
         graph->get_neighbors(all_ids[u], &neighbors, &neighbor_count);
 
         for (int i = 0; i < neighbor_count; ++i) {
-            int v = id_to_index[neighbors[i].to];
+            int v = find_city_index(all_ids, n, neighbors[i].to);
             if (v >= 0) {
                 indegree[v]--;
                 if (indegree[v] == 0) {
@@ -118,7 +122,6 @@ int run_topological_sort(const GraphBase* graph,
     }
 
     delete[] indegree;
-    delete[] id_to_index;
     delete[] all_ids;
 
     *out_sequence = sequence;

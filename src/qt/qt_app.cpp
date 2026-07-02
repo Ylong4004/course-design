@@ -105,11 +105,66 @@ void MainWindow::load_default_data()
 {
     if (FileManager::data_file_exists())
     {
-        GraphBase *lg = m_network->get_graph(STORAGE_LIST);
-        GraphBase *mg = m_network->get_graph(STORAGE_MATRIX);
-        FileManager::auto_load(lg);
-        FileManager::auto_load(mg);
+        load_network_file("./data/default.json");
     }
+}
+
+void MainWindow::refresh_runtime_services()
+{
+    if (m_network == nullptr)
+    {
+        return;
+    }
+
+    if (m_simulator != nullptr)
+    {
+        m_simulator->set_graph(m_network->get_graph(STORAGE_LIST));
+    }
+    if (m_comparator != nullptr)
+    {
+        m_comparator->set_graphs(m_network->get_graph(STORAGE_MATRIX),
+                                 m_network->get_graph(STORAGE_LIST));
+    }
+}
+
+int MainWindow::load_network_file(const char *path)
+{
+    if (m_network == nullptr || path == nullptr || path[0] == '\0')
+    {
+        return ERR_INVALID_INPUT;
+    }
+
+    GraphType file_graph_type = GRAPH_UNDIRECTED;
+    int rc = FileManager::detect_graph_type(path, &file_graph_type);
+    if (rc != SUCCESS)
+    {
+        return rc;
+    }
+
+    RoadNetwork temp_network(MAX_CITY_COUNT, file_graph_type);
+    rc = FileManager::load_from_file(temp_network.get_graph(STORAGE_LIST), path);
+    if (rc == SUCCESS)
+    {
+        rc = FileManager::load_from_file(temp_network.get_graph(STORAGE_MATRIX), path);
+    }
+    if (rc != SUCCESS)
+    {
+        return rc;
+    }
+
+    rc = m_network->reset(file_graph_type);
+    if (rc != SUCCESS)
+    {
+        return rc;
+    }
+    refresh_runtime_services();
+
+    rc = FileManager::load_from_file(m_network->get_graph(STORAGE_LIST), path);
+    if (rc == SUCCESS)
+    {
+        rc = FileManager::load_from_file(m_network->get_graph(STORAGE_MATRIX), path);
+    }
+    return rc;
 }
 
 /* ============================================================ */
@@ -227,7 +282,7 @@ void MainWindow::on_add_road()
 void MainWindow::on_save_file()
 {
     QString path = QFileDialog::getSaveFileName(
-        this, "保存路网", "./data/", "路网文件 (*.txt)");
+        this, "保存路网", "./data/", "路网文件 (*.json)");
     if (path.isEmpty())
         return;
 
@@ -248,20 +303,11 @@ void MainWindow::on_save_file()
 void MainWindow::on_load_file()
 {
     QString path = QFileDialog::getOpenFileName(
-        this, "加载路网", "./data/", "路网文件 (*.txt)");
+        this, "加载路网", "./data/", "路网文件 (*.json)");
     if (path.isEmpty())
         return;
 
-    GraphBase *lg = m_network->get_graph(STORAGE_LIST);
-    GraphBase *mg = m_network->get_graph(STORAGE_MATRIX);
-
-    int rc = FileManager::load_from_file(lg,
-                                         path.toLocal8Bit().constData());
-    if (rc == SUCCESS)
-    {
-        FileManager::load_from_file(mg,
-                                    path.toLocal8Bit().constData());
-    }
+    int rc = load_network_file(path.toLocal8Bit().constData());
 
     if (rc == SUCCESS)
     {
@@ -295,17 +341,20 @@ void MainWindow::on_network_changed()
     /* 刷新状态栏 */
     int city_count = 0;
     int road_count = 0;
+    QString graph_type = "无向图";
     if (m_network)
     {
         city_count = m_network->get_city_count();
         road_count = m_network->get_road_count();
+        graph_type = (m_network->get_type() == GRAPH_DIRECTED) ? "有向图" : "无向图";
     }
 
     if (m_status_info)
     {
         m_status_info->setText(
-            QString("城市: %1  |  道路: %2  |  类型: 无向图")
+            QString("城市: %1  |  道路: %2  |  类型: %3")
                 .arg(city_count)
-                .arg(road_count));
+                .arg(road_count)
+                .arg(graph_type));
     }
 }

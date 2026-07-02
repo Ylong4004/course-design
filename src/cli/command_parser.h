@@ -86,6 +86,10 @@ private:
                          StructureComparator *comparator);
 
     /* ---------- 各命令处理 ---------- */
+    static void cmd_new_network(const std::vector<std::string> &argv,
+                                RoadNetwork &network,
+                                CongestionSimulator *simulator,
+                                StructureComparator *comparator);
     static void cmd_new_city(const std::vector<std::string> &argv,
                              RoadNetwork &network);
     static void cmd_del_city(const std::vector<std::string> &argv,
@@ -117,7 +121,9 @@ private:
     static void cmd_save(const std::vector<std::string> &argv,
                          RoadNetwork &network);
     static void cmd_load(const std::vector<std::string> &argv,
-                         RoadNetwork &network);
+                         RoadNetwork &network,
+                         CongestionSimulator *simulator,
+                         StructureComparator *comparator);
     static void cmd_list();
     static void cmd_congest_list(CongestionSimulator *simulator);
     static void cmd_congest_report(const std::vector<std::string> &argv,

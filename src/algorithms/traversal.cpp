@@ -10,6 +10,21 @@
 #include "../common/defines.h"
 #include <iostream>
 
+static int find_city_index(const int* city_ids, int city_count, int city_id)
+{
+    if (city_ids == nullptr) {
+        return -1;
+    }
+
+    for (int i = 0; i < city_count; ++i) {
+        if (city_ids[i] == city_id) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 /* ========================= DFS ========================== */
 
 /**
@@ -17,11 +32,18 @@
  */
 static void dfs_visit(const GraphBase* graph,
                       int city_id,
+                      const int* all_ids,
+                      int all_count,
                       bool* visited,
                       int* sequence,
                       int* seq_index)
 {
-    visited[city_id] = true;
+    const int city_index = find_city_index(all_ids, all_count, city_id);
+    if (city_index < 0 || visited[city_index]) {
+        return;
+    }
+
+    visited[city_index] = true;
     sequence[(*seq_index)++] = city_id;
     DEBUG_PRINT("DFS 访问顶点 " << city_id);
 
@@ -31,8 +53,10 @@ static void dfs_visit(const GraphBase* graph,
 
     for (int i = 0; i < neighbor_count; ++i) {
         int next = neighbors[i].to;
-        if (!visited[next]) {
-            dfs_visit(graph, next, visited, sequence, seq_index);
+        int next_index = find_city_index(all_ids, all_count, next);
+        if (next_index >= 0 && !visited[next_index]) {
+            dfs_visit(graph, next, all_ids, all_count,
+                      visited, sequence, seq_index);
         }
     }
 
@@ -70,20 +94,19 @@ int traverse_dfs(const GraphBase* graph,
     int all_count = 0;
     graph->get_all_vertex_ids(&all_ids, &all_count);
 
-    bool* visited = new bool[vertex_count]();
-    int* sequence = new int[vertex_count];
-
-    /* 建立 city_id → 内部索引的映射 */
-    /* visited 用 all_ids 的索引下标 */
+    bool* visited = new bool[all_count]();
+    int* sequence = new int[all_count];
     int seq_index = 0;
 
     /* 从起点开始 DFS */
-    dfs_visit(graph, start_city, visited, sequence, &seq_index);
+    dfs_visit(graph, start_city, all_ids, all_count,
+              visited, sequence, &seq_index);
 
     /* 处理非连通图——遍历所有未访问顶点 */
     for (int i = 0; i < all_count; ++i) {
-        if (!visited[all_ids[i]]) {
-            dfs_visit(graph, all_ids[i], visited, sequence, &seq_index);
+        if (!visited[i]) {
+            dfs_visit(graph, all_ids[i], all_ids, all_count,
+                      visited, sequence, &seq_index);
         }
     }
 
@@ -127,17 +150,25 @@ int traverse_bfs(const GraphBase* graph,
     int all_count = 0;
     graph->get_all_vertex_ids(&all_ids, &all_count);
 
-    bool* visited = new bool[vertex_count]();
-    int* sequence = new int[vertex_count];
+    bool* visited = new bool[all_count]();
+    int* sequence = new int[all_count];
     int seq_index = 0;
 
     Queue queue(vertex_count);
+    const int start_index = find_city_index(all_ids, all_count, start_city);
+    if (start_index < 0) {
+        delete[] visited;
+        delete[] sequence;
+        delete[] all_ids;
+        return ERR_CITY_NOT_FOUND;
+    }
+
     queue.push(start_city);
-    visited[start_city] = true;
+    visited[start_index] = true;
 
     while (!queue.empty()) {
         int current = queue.pop();
-        DEBUG_PRINT("BFS 出队顶点 " << all_ids[current]);
+        DEBUG_PRINT("BFS 出队顶点 " << current);
         sequence[seq_index++] = current;
 
         Edge_t* neighbors = nullptr;
@@ -146,8 +177,9 @@ int traverse_bfs(const GraphBase* graph,
 
         for (int i = 0; i < neighbor_count; ++i) {
             int next = neighbors[i].to;
-            if (!visited[next]) {
-                visited[next] = true;
+            int next_index = find_city_index(all_ids, all_count, next);
+            if (next_index >= 0 && !visited[next_index]) {
+                visited[next_index] = true;
                 queue.push(next);
             }
         }
@@ -157,9 +189,9 @@ int traverse_bfs(const GraphBase* graph,
 
     /* 处理非连通图 */
     for (int i = 0; i < all_count; ++i) {
-        if (!visited[all_ids[i]]) {
+        if (!visited[i]) {
             queue.push(all_ids[i]);
-            visited[all_ids[i]] = true;
+            visited[i] = true;
 
             while (!queue.empty()) {
                 int current = queue.pop();
@@ -171,8 +203,9 @@ int traverse_bfs(const GraphBase* graph,
 
                 for (int j = 0; j < neighbor_count; ++j) {
                     int next = neighbors[j].to;
-                    if (!visited[next]) {
-                        visited[next] = true;
+                    int next_index = find_city_index(all_ids, all_count, next);
+                    if (next_index >= 0 && !visited[next_index]) {
+                        visited[next_index] = true;
                         queue.push(next);
                     }
                 }

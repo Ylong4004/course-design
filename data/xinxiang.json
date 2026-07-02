@@ -1,0 +1,12 @@
+{
+  "graph_type": 1,
+  "cities": [
+    {"id": 1, "name": "河南科技学院"},
+    {"id": 2, "name": "河南师范大学"},
+    {"id": 3, "name": "河南医药大学"}
+  ],
+  "roads": [
+    {"from": 1, "to": 2, "weight": 10},
+    {"from": 1, "to": 3, "weight": 15}
+  ]
+}

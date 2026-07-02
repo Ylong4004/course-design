@@ -185,6 +185,13 @@ StructureComparator::~StructureComparator()
     list_graph = nullptr;
 }
 
+void StructureComparator::set_graphs(GraphBase *new_matrix_graph,
+                                     GraphBase *new_list_graph)
+{
+    matrix_graph = new_matrix_graph;
+    list_graph = new_list_graph;
+}
+
 /**
  * @brief 分别测量邻接矩阵和邻接表的内存占用（字节数）。
  * @param out_matrix_bytes 输出参数，邻接矩阵内存占用

@@ -175,6 +175,23 @@ CongestionSimulator::~CongestionSimulator()
     after_prev = nullptr;
 }
 
+void CongestionSimulator::set_graph(GraphBase *new_graph)
+{
+    graph = new_graph;
+    modify_count = 0;
+    analysis_city_count = 0;
+
+    delete[] before_dist;
+    delete[] before_prev;
+    delete[] after_dist;
+    delete[] after_prev;
+
+    before_dist = nullptr;
+    before_prev = nullptr;
+    after_dist = nullptr;
+    after_prev = nullptr;
+}
+
 /**
  * @brief 设置指定道路的拥堵权值，记录原始权值供后续恢复。
  * @param from 起点城市ID

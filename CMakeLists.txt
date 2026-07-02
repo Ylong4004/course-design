@@ -11,12 +11,16 @@ project(TrafficNetwork VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(BUILD_QT_GUI "Build Qt GUI target" OFF)
+
 # ----------------------------------------------------------
 #  查找 Qt（优先 Qt6，回退 Qt5；未安装 Qt 时仍可编译控制台版本）
 # ----------------------------------------------------------
-find_package(Qt6 COMPONENTS Core Gui Widgets QUIET)
-if(NOT Qt6_FOUND)
-    find_package(Qt5 COMPONENTS Core Gui Widgets QUIET)
+if(BUILD_QT_GUI)
+    find_package(Qt6 COMPONENTS Core Gui Widgets QUIET)
+    if(NOT Qt6_FOUND)
+        find_package(Qt5 COMPONENTS Core Gui Widgets QUIET)
+    endif()
 endif()
 
 # ----------------------------------------------------------
@@ -81,10 +85,10 @@ set(QT_HEADERS
 # ----------------------------------------------------------
 #  统一 Qt 版本变量
 # ----------------------------------------------------------
-if(Qt6_FOUND)
+if(BUILD_QT_GUI AND Qt6_FOUND)
     set(QT_VERSION_MAJOR 6)
     set(Qt_FOUND TRUE)
-elseif(Qt5_FOUND)
+elseif(BUILD_QT_GUI AND Qt5_FOUND)
     set(QT_VERSION_MAJOR 5)
     set(Qt_FOUND TRUE)
 else()
@@ -97,8 +101,7 @@ endif()
 if(Qt_FOUND)
     message(STATUS "Qt${QT_VERSION_MAJOR} found, building WITH Qt GUI support")
 
-    # 启用 Qt 自动处理：MOC（信号/槽）、UIC（.ui）、RCC（资源）
-    set(CMAKE_AUTOMOC ON)
+    # 启用 Qt 自动处理：MOC（信号/槽），只作用于 GUI 目标
     #set(CMAKE_AUTOUIC ON)   # 如有 .ui 文件再启用
     #set(CMAKE_AUTORCC ON)   # 如有 .qrc 文件再启用
 
@@ -113,6 +116,10 @@ if(Qt_FOUND)
     )
 
     target_compile_definitions(traffic_network PRIVATE QT_GUI_ENABLED)
+
+    set_target_properties(traffic_network PROPERTIES
+        AUTOMOC ON
+    )
 
     target_link_libraries(traffic_network PRIVATE
         Qt${QT_VERSION_MAJOR}::Core

@@ -16,12 +16,13 @@ network_console.exe <命令> <参数...>        # 单条命令批处理
 
 ---
 
-## 命令清单（共 21 条）
+## 命令清单（共 22 条）
 
 ### 一、路网编辑
 
 | 命令             | 参数                             | 说明                         | 示例                   |
 | ---------------- | -------------------------------- | ---------------------------- | ---------------------- |
+| `new_network`  | `<type>` `<file>`            | 新建空路网，type 可为 `0/1/undirected/directed` | `new_network 1 zhengzhou_directed` |
 | `new_city`     | `<id>` `<name>`              | 添加城市                     | `new_city 1 北京`    |
 | `del_city`     | `<id>`                         | 删除城市（级联删除关联道路） | `del_city 1`         |
 | `new_road`     | `<from>` `<to>` `<weight>` | 添加道路                     | `new_road 1 2 50`    |
@@ -65,14 +66,14 @@ network_console.exe <命令> <参数...>        # 单条命令批处理
 
 ### 七、性能对比 & 文件管理 & 系统
 
-| 命令        | 参数           | 说明                       | 示例                              |
-| ----------- | -------------- | -------------------------- | --------------------------------- |
-| `compare` | —             | 邻接矩阵 vs 邻接表性能对比 | `compare`                       |
-| `save`    | `[filepath]` | 保存路网（默认路径）       | `save` / `save ./data/my.txt` |
-| `load`    | `[filepath]` | 加载路网（默认路径）       | `load` / `load ./data/my.txt` |
-| `help`    | —             | 显示命令帮助               | `help`                          |
-| `menu`    | —             | 切回菜单模式（仅交互模式） | `menu`                          |
-| `exit`    | —             | 退出程序                   | `exit`                          |
+| 命令        | 参数           | 说明                       | 示例                               |
+| ----------- | -------------- | -------------------------- | ---------------------------------- |
+| `compare` | —             | 邻接矩阵 vs 邻接表性能对比 | `compare`                        |
+| `save`    | `[filepath]` | 保存路网（默认路径）       | `save` / `save ./data/my.json` |
+| `load`    | `[filepath]` | 加载路网（默认路径）       | `load` / `load ./data/my.json` |
+| `help`    | —             | 显示命令帮助               | `help`                           |
+| `menu`    | —             | 切回菜单模式（仅交互模式） | `menu`                           |
+| `exit`    | —             | 退出程序                   | `exit`                           |
 
 ---
 
@@ -97,7 +98,8 @@ network_console.exe <命令> <参数...>        # 单条命令批处理
 | `restore`      | `CongestionSimulator::restore_all()`                                      |
 | `compare`      | `StructureComparator::run_full_comparison()`                              |
 | `save`         | `FileManager::save_to_file(graph, path)`                                  |
-| `load`         | `FileManager::load_from_file(graph, path)`                                |
+| `load`         | `FileManager::detect_graph_type(path)` → `RoadNetwork::reset(type)` → `FileManager::load_from_file(graph, path)` |
+| `new_network`  | `RoadNetwork::reset(type)` → `FileManager::save_to_file(graph, path)`     |
 
 ---
 

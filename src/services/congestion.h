@@ -41,6 +41,8 @@ public:
     CongestionSimulator(GraphBase *graph, int max_modify);
     ~CongestionSimulator();
 
+    void set_graph(GraphBase *new_graph);
+
     /* ========== 拥堵操作 ========== */
 
     /**
